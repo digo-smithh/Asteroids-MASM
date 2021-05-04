@@ -19,8 +19,6 @@
       ; ---------------------------------------------
       include \masm32\include\windows.inc
 
-      
-
       ; -------------------------------------------------------------
       ; In MASM32, each include file created by the L2INC.EXE utility
       ; has a matching library file. If you need functions from a
@@ -31,6 +29,7 @@
       include \masm32\include\user32.inc
       include \masm32\include\kernel32.inc
       include \MASM32\INCLUDE\gdi32.inc
+      include     \masm32\include\gdiplus.inc
 
       include \MASM32\INCLUDE\Comctl32.inc
       include \MASM32\INCLUDE\comdlg32.inc
@@ -41,6 +40,7 @@
       includelib \masm32\lib\user32.lib
       includelib \masm32\lib\kernel32.lib
       includelib \MASM32\LIB\gdi32.lib
+      includelib  \masm32\lib\gdiplus.lib
       includelib \MASM32\LIB\Comctl32.lib
       includelib \MASM32\LIB\comdlg32.lib
       includelib \MASM32\LIB\shell32.lib
@@ -122,10 +122,11 @@
 
 .data
         szDisplayName db "Asteroids",0
+        filename    db "vialactea.png",0
         CommandLine   dd 0
         hWnd          dd 0
-        hInstance     dd 0
         buffer        db 128 dup(0)
+        hInstance     dd 0
 
 ; #########################################################################
 
@@ -135,6 +136,10 @@
         threadID    DWORD ?  
         hEventStart HANDLE ?
         hBmp        dd ?
+        StartupInfo   GdiplusStartupInput <?>
+        UnicodeFileName     db 32 dup(?)
+        BmpImage            dd ?
+        token               dd ?
 ; ------------------------------------------------------------------------
 ; This is the start of the code section where executable code begins. This
 ; section ending with the ExitProcess() API function call is the only
@@ -263,6 +268,22 @@ WinMain proc hInst     :DWORD,
 WinMain endp
 
 ; #########################################################################
+UnicodeStr  proc USES esi ebx Source:DWORD,Dest:DWORD
+
+    mov     ebx,1
+    mov     esi,Source
+    mov     edx,Dest
+    xor     eax,eax
+    sub     eax,ebx
+@@:
+    add     eax,ebx
+    movzx   ecx,BYTE PTR [esi+eax]
+    mov     WORD PTR [edx+eax*2],cx
+    test    ecx,ecx
+    jnz     @b
+    ret
+
+UnicodeStr  ENDP
 
 WndProc proc hWin   :DWORD,
              uMsg   :DWORD,
@@ -349,6 +370,15 @@ WndProc proc hWin   :DWORD,
             return  0
 
     .elseif uMsg == WM_CREATE
+      mov     eax,OFFSET StartupInfo
+      mov     GdiplusStartupInput.GdiplusVersion[eax],1
+
+      invoke  GdiplusStartup,ADDR token,ADDR StartupInfo,0 
+      invoke  UnicodeStr,ADDR filename,ADDR UnicodeFileName
+								
+      invoke  GdipCreateBitmapFromFile,ADDR UnicodeFileName,ADDR BmpImage
+									
+      invoke  GdipCreateHBITMAPFromBitmap,BmpImage,ADDR hBmp,0
     ; --------------------------------------------------------------------
     ; This message is sent to WndProc during the CreateWindowEx function
     ; call and is processed before it returns. This is used as a position
@@ -416,6 +446,7 @@ TopXY proc wDim:DWORD, sDim:DWORD
     return sDim
 
 TopXY endp
+
 
 ; ########################################################################
 
