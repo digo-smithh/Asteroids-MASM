@@ -116,19 +116,17 @@
     ICONE   equ     500 ; define o numero associado ao icon igual ao arquivo RC
     ; define o numero da mensagem criada pelo usuario
     WM_FINISH equ WM_USER+100h  ; o numero da mensagem é a ultima + 100h
-    img1    equ     100
+    foguete    equ     100
     CREF_TRANSPARENT  EQU 00FF00FFh
 
 
 .data
         szDisplayName db "Asteroids",0
         filename    db "vialactea.png",0
-        foguete    db "rocket.png",0
         CommandLine   dd 0
         hWnd          dd 0
         buffer        db 128 dup(0)
         hInstance     dd 0
-        bf BLENDFUNCTION <AC_SRC_OVER,0,255,AC_SRC_ALPHA>
 
 ; #########################################################################
 
@@ -167,8 +165,8 @@ start:
     mov     CommandLine, eax
 
     ; carrego o bitmap
-    invoke LoadBitmap, hInstance, img1
-    mov    hBmp, eax
+    invoke LoadBitmap, hInstance, foguete
+    mov    hFoguete, eax
 
     ; eax tem o ponteiro para uma string que mostra toda linha de comando.
     ;invoke wsprintf,addr buffer,chr$("%s"), eax
@@ -363,26 +361,12 @@ WndProc proc hWin   :DWORD,
             invoke SelectObject, memDC, hFoguete
             mov  hOld, eax  
             
-            ;invoke BitBlt, hDC, 0, 0,200,200, memDC, 10,10, SRCCOPY
-            ;invoke SelectObject,hDC,hOld
-            ;invoke DeleteDC,memDC
-
-            mov    bf.AlphaFormat, 0
-            mov    bf.BlendFlags, 0
-            ;mov    bf.BlendOp, AC_SRCOVER
-            mov    bf.SourceConstantAlpha, 255
-            mov    ebx, bf
-            invoke  AlphaBlend,hDC, 0,0, 100,100, memDC, 0,0, 100,100,ebx
-
-            invoke CreateCompatibleDC, hDC
-            mov   memDC, eax
-            invoke TransparentBlt, hDC, 190,100, 32,32, memDC, \
-                            32,0,32,32, CREF_TRANSPARENT
-
+            invoke TransparentBlt, hDC, 190, 200, 50, 50, memDC, 0, 0, 200, 200, CREF_TRANSPARENT
+            invoke SelectObject,hDC,hOld
+            invoke DeleteDC,memDC
 
             invoke SelectObject,hDC,hOld
             invoke DeleteDC,memDC  
-
 
             invoke EndPaint,hWin,ADDR Ps
             return  0
@@ -397,12 +381,6 @@ WndProc proc hWin   :DWORD,
       invoke  GdipCreateBitmapFromFile,ADDR UnicodeFileName,ADDR BmpImage
 									
       invoke  GdipCreateHBITMAPFromBitmap,BmpImage,ADDR hBmp,0
-
-      invoke  UnicodeStr,ADDR foguete,ADDR UnicodeFileName
-								
-      invoke  GdipCreateBitmapFromFile,ADDR UnicodeFileName,ADDR BmpImage
-									
-      invoke  GdipCreateHBITMAPFromBitmap,BmpImage,ADDR hFoguete,0
     ; --------------------------------------------------------------------
     ; This message is sent to WndProc during the CreateWindowEx function
     ; call and is processed before it returns. This is used as a position

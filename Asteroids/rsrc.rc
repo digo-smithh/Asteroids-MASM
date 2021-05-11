@@ -2,14 +2,14 @@
 // trabalhar
 
 #define ICONE 500
-#define IMG1  100
+#define FOGUETE  100
 
 // define icone e outros a serem utilizados
 ICONE ICON MOVEABLE PURE LOADONCALL DISCARDABLE "asteroid.ICO"
 
 // INDICA O BITMAP A SER UTILIZADO
 
-IMG1 BITMAP MOVEABLE PURE LOADONCALL DISCARDABLE "hommer.bmp"
+FOGUETE BITMAP MOVEABLE PURE LOADONCALL DISCARDABLE "rocket.bmp"
 
 
 // cria a estrutura do menu
