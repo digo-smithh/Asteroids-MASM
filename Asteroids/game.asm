@@ -123,10 +123,12 @@
 .data
         szDisplayName db "Asteroids",0
         filename    db "vialactea.png",0
+        foguete    db "rocket.png",0
         CommandLine   dd 0
         hWnd          dd 0
         buffer        db 128 dup(0)
         hInstance     dd 0
+        bf BLENDFUNCTION <AC_SRC_OVER,0,255,AC_SRC_ALPHA>
 
 ; #########################################################################
 
@@ -136,6 +138,7 @@
         threadID    DWORD ?  
         hEventStart HANDLE ?
         hBmp        dd ?
+        hFoguete        dd ?
         StartupInfo   GdiplusStartupInput <?>
         UnicodeFileName     db 32 dup(?)
         BmpImage            dd ?
@@ -327,37 +330,52 @@ WndProc proc hWin   :DWORD,
     .elseif uMsg == WM_CHAR
           
     .elseif uMsg == WM_KEYDOWN
-          
+      .if wParam == VK_UP
+      ; TA FUNCIONANDO
+      ; andar para a direção que ele aponta
+      .elseif wParam == VK_LEFT
+      ; girar anti-horário
+      .elseif wParam == VK_RIGHT
+      ; girar horário
+      .elseif wParam == VK_SPACE
+      ; atirar
+      .endif
             
     .elseif uMsg == WM_FINISH
         
 
     .elseif uMsg == WM_PAINT
-
             invoke BeginPaint,hWin,ADDR Ps
             ; aqui entra o desejamos desenha, escrever e outros.
-            ; há uma outra maneira de fazer isso, mas veremos mais adiante.
-            
             mov    hDC, eax
 
             invoke CreateCompatibleDC, hDC
             mov   memDC, eax
             invoke SelectObject, memDC, hBmp
             mov  hOld, eax  
+
             invoke BitBlt, hDC, 0, 0,800,450, memDC, 10,10, SRCCOPY
             invoke SelectObject,hDC,hOld
             invoke DeleteDC,memDC  
-            
 
             invoke CreateCompatibleDC, hDC
             mov   memDC, eax
-
-            invoke SelectObject, memDC, hBmp
+            invoke SelectObject, memDC, hFoguete
             mov  hOld, eax  
+            
+            ;invoke BitBlt, hDC, 0, 0,200,200, memDC, 10,10, SRCCOPY
+            ;invoke SelectObject,hDC,hOld
+            ;invoke DeleteDC,memDC
 
-            invoke BitBlt, hDC, 10, 100,166,68, memDC, 0,0, SRCCOPY
-            invoke BitBlt, hDC, 10, 200,32,32, memDC, 0,0, SRCCOPY
+            mov    bf.AlphaFormat, 0
+            mov    bf.BlendFlags, 0
+            ;mov    bf.BlendOp, AC_SRCOVER
+            mov    bf.SourceConstantAlpha, 255
+            mov    ebx, bf
+            invoke  AlphaBlend,hDC, 0,0, 100,100, memDC, 0,0, 100,100,ebx
 
+            invoke CreateCompatibleDC, hDC
+            mov   memDC, eax
             invoke TransparentBlt, hDC, 190,100, 32,32, memDC, \
                             32,0,32,32, CREF_TRANSPARENT
 
@@ -379,6 +397,12 @@ WndProc proc hWin   :DWORD,
       invoke  GdipCreateBitmapFromFile,ADDR UnicodeFileName,ADDR BmpImage
 									
       invoke  GdipCreateHBITMAPFromBitmap,BmpImage,ADDR hBmp,0
+
+      invoke  UnicodeStr,ADDR foguete,ADDR UnicodeFileName
+								
+      invoke  GdipCreateBitmapFromFile,ADDR UnicodeFileName,ADDR BmpImage
+									
+      invoke  GdipCreateHBITMAPFromBitmap,BmpImage,ADDR hFoguete,0
     ; --------------------------------------------------------------------
     ; This message is sent to WndProc during the CreateWindowEx function
     ; call and is processed before it returns. This is used as a position
