@@ -332,7 +332,6 @@ WndProc proc hWin   :DWORD,
       .if wParam == VK_UP
 
       .elseif wParam == VK_LEFT
-        fn draw_image,hdc,ebx,10,10,ecx,edx,50,0
 
       .elseif wParam == VK_RIGHT
     
@@ -362,7 +361,7 @@ WndProc proc hWin   :DWORD,
             invoke SelectObject, memDC, hFoguete
             mov  hOld, eax  
             
-            invoke TransparentBlt, hDC, 190, 200, 50, 50, memDC, 0, 0, 200, 200, CREF_TRANSPARENT
+            invoke TransparentBlt, hDC, 190, 200, 50, 50, memDC, 0, 0, 200, 200, 16777215
             invoke SelectObject,hDC,hOld
             invoke DeleteDC,memDC
 
