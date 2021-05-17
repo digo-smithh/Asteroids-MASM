@@ -127,6 +127,7 @@
         hWnd          dd 0
         buffer        db 128 dup(0)
         hInstance     dd 0
+        angulo        dd 0
 
 ; #########################################################################
 
@@ -324,20 +325,20 @@ WndProc proc hWin   :DWORD,
 
     .elseif uMsg == WM_LBUTTONUP
          
-
     .elseif uMsg == WM_CHAR
           
     .elseif uMsg == WM_KEYDOWN
+
       .if wParam == VK_UP
-      ; TA FUNCIONANDO
-      ; andar para a direção que ele aponta
+
       .elseif wParam == VK_LEFT
-      ; girar anti-horário
+        fn draw_image,hdc,ebx,10,10,ecx,edx,50,0
+
       .elseif wParam == VK_RIGHT
-      ; girar horário
+    
       .elseif wParam == VK_SPACE
-      ; atirar
-      .endif
+
+    .endif
             
     .elseif uMsg == WM_FINISH
         
