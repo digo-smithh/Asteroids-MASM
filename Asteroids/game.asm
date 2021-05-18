@@ -127,7 +127,7 @@
         hWnd          dd 0
         buffer        db 128 dup(0)
         hInstance     dd 0
-        angulo        dd 0
+        rotation        dd 0
 
 ; #########################################################################
 
@@ -333,8 +333,28 @@ WndProc proc hWin   :DWORD,
 
       .elseif wParam == VK_LEFT
 
+        .if rotation == 0
+            mov rotation, 1400
+
+        .elseif rotation != 0     
+          sub rotation, 200
+        
+        .endif
+      
+        Invoke RedrawWindow, hWin, NULL, NULL, RDW_UPDATENOW + RDW_INVALIDATE + RDW_ALLCHILDREN 
+
       .elseif wParam == VK_RIGHT
-    
+
+        .if rotation == 1400
+          mov rotation, 0
+
+        .elseif rotation != 1400     
+          add rotation, 200
+        
+        .endif
+      
+        Invoke RedrawWindow, hWin, NULL, NULL, RDW_UPDATENOW + RDW_INVALIDATE + RDW_ALLCHILDREN
+
       .elseif wParam == VK_SPACE
 
     .endif
@@ -361,7 +381,7 @@ WndProc proc hWin   :DWORD,
             invoke SelectObject, memDC, hFoguete
             mov  hOld, eax  
             
-            invoke TransparentBlt, hDC, 190, 200, 50, 50, memDC, 0, 0, 200, 200, 16777215
+            invoke TransparentBlt, hDC, 190, 200, 50, 50, memDC, rotation, 0, 200, 200, 16777215
             invoke SelectObject,hDC,hOld
             invoke DeleteDC,memDC
 
