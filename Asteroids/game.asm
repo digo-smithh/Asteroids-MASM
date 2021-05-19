@@ -121,27 +121,29 @@
 
 
 .data
-        szDisplayName db "Asteroids",0
-        filename    db "vialactea.png",0
-        CommandLine   dd 0
-        hWnd          dd 0
-        buffer        db 128 dup(0)
-        hInstance     dd 0
-        rotation        dd 0
+        szDisplayName        db "Asteroids",0
+        filename             db "vialactea.png",0
+        CommandLine          dd 0
+        hWnd                 dd 0
+        buffer               db 128 dup(0)
+        hInstance            dd 0
+        rotation             dd 0
+        xPosition            dd 375
+        yPosition            dd 175
 
 ; #########################################################################
 
 .data?
-        hitpoint    POINT <>
-        hitpointEnd POINT <>
-        threadID    DWORD ?  
-        hEventStart HANDLE ?
-        hBmp        dd ?
-        hFoguete        dd ?
-        StartupInfo   GdiplusStartupInput <?>
-        UnicodeFileName     db 32 dup(?)
-        BmpImage            dd ?
-        token               dd ?
+        hitpoint                  POINT <>
+        hitpointEnd               POINT <>
+        threadID                  DWORD ?  
+        hEventStart               HANDLE ?
+        hBmp                      dd ?
+        hFoguete                  dd ?
+        StartupInfo               GdiplusStartupInput <?>
+        UnicodeFileName           db 32 dup(?)
+        BmpImage                  dd ?
+        token                     dd ?
 ; ------------------------------------------------------------------------
 ; This is the start of the code section where executable code begins. This
 ; section ending with the ExitProcess() API function call is the only
@@ -331,6 +333,62 @@ WndProc proc hWin   :DWORD,
 
       .if wParam == VK_UP
 
+        .if rotation == 0
+            .if yPosition != 400
+              sub yPosition, 2
+            .endif
+
+        .elseif rotation == 200  
+            .if yPosition != 0   
+              .if xPosition != 750 
+                add xPosition, 2
+                sub yPosition, 2
+              .endif
+            .endif
+
+        .elseif rotation == 400
+          .if xPosition != 750     
+            add xPosition, 2
+          .endif
+
+        .elseif rotation == 600 
+            .if yPosition != 400   
+              .if xPosition != 750     
+                add xPosition, 2
+                add yPosition, 2
+              .endif
+            .endif
+
+        .elseif rotation == 800   
+          .if yPosition != 400     
+            add yPosition, 2
+          .endif
+
+        .elseif rotation == 1000   
+            .if yPosition != 400   
+              .if xPosition != 0    
+                sub xPosition, 2
+                add yPosition, 2
+              .endif
+            .endif
+
+        .elseif rotation == 1200   
+          .if xPosition != 0   
+            sub xPosition, 2
+          .endif
+
+        .elseif rotation == 1400    
+            .if yPosition != 0   
+              .if xPosition != 0
+                sub xPosition, 2
+                sub yPosition, 2
+              .endif
+            .endif
+          
+        .endif
+
+        Invoke RedrawWindow, hWin, NULL, NULL, RDW_UPDATENOW + RDW_INVALIDATE + RDW_ALLCHILDREN 
+
       .elseif wParam == VK_LEFT
 
         .if rotation == 0
@@ -381,7 +439,7 @@ WndProc proc hWin   :DWORD,
             invoke SelectObject, memDC, hFoguete
             mov  hOld, eax  
             
-            invoke TransparentBlt, hDC, 190, 200, 50, 50, memDC, rotation, 0, 200, 200, 16777215
+            invoke TransparentBlt, hDC, xPosition, yPosition, 50, 50, memDC, rotation, 0, 200, 200, 16777215
             invoke SelectObject,hDC,hOld
             invoke DeleteDC,memDC
 
