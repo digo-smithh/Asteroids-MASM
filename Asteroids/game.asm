@@ -335,53 +335,53 @@ WndProc proc hWin   :DWORD,
 
         .if rotation == 0
             .if yPosition != 400
-              sub yPosition, 2
+              sub yPosition, 4
             .endif
 
         .elseif rotation == 200  
             .if yPosition != 0   
               .if xPosition != 750 
-                add xPosition, 2
-                sub yPosition, 2
+                add xPosition, 4
+                sub yPosition, 4
               .endif
             .endif
 
         .elseif rotation == 400
           .if xPosition != 750     
-            add xPosition, 2
+            add xPosition, 4
           .endif
 
         .elseif rotation == 600 
             .if yPosition != 400   
               .if xPosition != 750     
-                add xPosition, 2
-                add yPosition, 2
+                add xPosition, 4
+                add yPosition, 4
               .endif
             .endif
 
         .elseif rotation == 800   
           .if yPosition != 400     
-            add yPosition, 2
+            add yPosition, 4
           .endif
 
         .elseif rotation == 1000   
             .if yPosition != 400   
               .if xPosition != 0    
-                sub xPosition, 2
-                add yPosition, 2
+                sub xPosition, 4
+                add yPosition, 4
               .endif
             .endif
 
         .elseif rotation == 1200   
           .if xPosition != 0   
-            sub xPosition, 2
+            sub xPosition, 4
           .endif
 
         .elseif rotation == 1400    
             .if yPosition != 0   
               .if xPosition != 0
-                sub xPosition, 2
-                sub yPosition, 2
+                sub xPosition, 4
+                sub yPosition, 4
               .endif
             .endif
           
