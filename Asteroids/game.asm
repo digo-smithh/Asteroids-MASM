@@ -101,7 +101,7 @@
 ; ----------------------------------------------------------------------
 
         WinMain PROTO :DWORD,:DWORD,:DWORD,:DWORD
-        WndProc PROTO :DWORD,:DWORD,:DWORD,:DWORD
+        WndProc PROTO :DWORD,:DWORD,:DWORD,:DWORD, :DWORD
         TopXY PROTO   :DWORD,:DWORD
 
 ; #########################################################################
@@ -129,14 +129,14 @@
         hInstance            dd 0
         rotation             dd 0
         xPosition            dd 375
-        yPosition            dd 175
+        yPosition            dd 175             
 
 ; #########################################################################
 
 .data?
         hitpoint                  POINT <>
         hitpointEnd               POINT <>
-        threadID                  DWORD ?  
+        threadID                  DWORD ?    
         hEventStart               HANDLE ?
         hBmp                      dd ?
         hFoguete                  dd ?
@@ -292,7 +292,8 @@ UnicodeStr  ENDP
 WndProc proc hWin   :DWORD,
              uMsg   :DWORD,
              wParam :DWORD,
-             lParam :DWORD
+             lParam :DWORD,
+             oldParam :DWORD
 
     LOCAL hDC    :DWORD
     LOCAL Ps     :PAINTSTRUCT
@@ -328,90 +329,98 @@ WndProc proc hWin   :DWORD,
     .elseif uMsg == WM_LBUTTONUP
          
     .elseif uMsg == WM_CHAR
+
+    .elseif uMsg == WM_KEYUP
+
+      .if wParam == VK_UP
+        mov oldParam, 0
+      .endif
           
     .elseif uMsg == WM_KEYDOWN
 
       .if wParam == VK_UP
 
         .if rotation == 0
-            .if yPosition != 400
-              sub yPosition, 4
+            .if yPosition >= 6
+              sub yPosition, 6
             .endif
 
         .elseif rotation == 200  
-            .if yPosition != 0   
-              .if xPosition != 750 
-                add xPosition, 4
-                sub yPosition, 4
+            .if yPosition >= 4   
+              .if xPosition <= 700 
+                add xPosition, 6
+                sub yPosition, 6
               .endif
             .endif
 
         .elseif rotation == 400
-          .if xPosition != 750     
-            add xPosition, 4
+          .if xPosition <= 730     
+            add xPosition, 6
           .endif
 
         .elseif rotation == 600 
-            .if yPosition != 400   
-              .if xPosition != 750     
-                add xPosition, 4
-                add yPosition, 4
+            .if yPosition <= 360   
+              .if xPosition <= 735     
+                add xPosition, 6
+                add yPosition, 6
               .endif
             .endif
 
         .elseif rotation == 800   
-          .if yPosition != 400     
-            add yPosition, 4
+          .if yPosition <= 360     
+            add yPosition, 6
           .endif
 
         .elseif rotation == 1000   
-            .if yPosition != 400   
-              .if xPosition != 0    
-                sub xPosition, 4
-                add yPosition, 4
+            .if yPosition <= 360   
+              .if xPosition >= 4    
+                sub xPosition, 6
+                add yPosition, 6
               .endif
             .endif
 
         .elseif rotation == 1200   
-          .if xPosition != 0   
-            sub xPosition, 4
+          .if xPosition >= 6   
+            sub xPosition, 6
           .endif
 
         .elseif rotation == 1400    
-            .if yPosition != 0   
-              .if xPosition != 0
-                sub xPosition, 4
-                sub yPosition, 4
+            .if yPosition >= 4   
+              .if xPosition >= 4
+                sub xPosition, 6
+                sub yPosition, 6
               .endif
-            .endif
-          
-        .endif
+            .endif        
 
-        Invoke RedrawWindow, hWin, NULL, NULL, RDW_UPDATENOW + RDW_INVALIDATE + RDW_ALLCHILDREN 
+      mov eax, wParam
+      mov oldParam, eax
+      mov ecx, oldParam
+      .endif
+      
+      Invoke RedrawWindow, hWin, NULL, NULL, RDW_UPDATENOW + RDW_INVALIDATE + RDW_ALLCHILDREN 
 
       .elseif wParam == VK_LEFT
 
         .if rotation == 0
             mov rotation, 1400
 
-        .elseif rotation != 0     
-          sub rotation, 200
-        
+          .elseif rotation != 0     
+              sub rotation, 200      
         .endif
+          
+    Invoke RedrawWindow, hWin, NULL, NULL, RDW_UPDATENOW + RDW_INVALIDATE + RDW_ALLCHILDREN 
       
-        Invoke RedrawWindow, hWin, NULL, NULL, RDW_UPDATENOW + RDW_INVALIDATE + RDW_ALLCHILDREN 
+    .elseif wParam == VK_RIGHT
 
-      .elseif wParam == VK_RIGHT
-
-        .if rotation == 1400
+      .if rotation == 1400
           mov rotation, 0
 
         .elseif rotation != 1400     
-          add rotation, 200
+            add rotation, 200
         
-        .endif
+      .endif
       
-        Invoke RedrawWindow, hWin, NULL, NULL, RDW_UPDATENOW + RDW_INVALIDATE + RDW_ALLCHILDREN
+      Invoke RedrawWindow, hWin, NULL, NULL, RDW_UPDATENOW + RDW_INVALIDATE + RDW_ALLCHILDREN
 
       .elseif wParam == VK_SPACE
 
