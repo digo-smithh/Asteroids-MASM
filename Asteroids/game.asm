@@ -117,6 +117,7 @@
     ; define o numero da mensagem criada pelo usuario
     WM_FINISH equ WM_USER+100h  ; o numero da mensagem é a ultima + 100h
     foguete    equ     100
+    bigAsteroid    equ     400
     CREF_TRANSPARENT  EQU 00FF00FFh
 
 
@@ -129,17 +130,33 @@
         hInstance            dd 0
         rotation             dd 0
         xPosition            dd 375
-        yPosition            dd 175             
+        yPosition            dd 175
+        asteroidCount        dd 4
+        isAlive              dd 1
+        isOneAlive           dd 1  
+        isTwoAlive           dd 1  
+        isThreeAlive         dd 1  
+        isFourAlive          dd 1
+        xOne                 dd 1       
+        yOne                 dd 1        
+        xTwo                 dd 1   
+        yTwo                 dd 1   
+        xThree               dd 1   
+        yThree               dd 1  
+        xFour                dd 1   
+        yFour                dd 1 
 
 ; #########################################################################
 
 .data?
+        dwThreadId dd ?
         hitpoint                  POINT <>
         hitpointEnd               POINT <>
         threadID                  DWORD ?    
         hEventStart               HANDLE ?
         hBmp                      dd ?
         hFoguete                  dd ?
+        hBigAsteroid              dd ?
         StartupInfo               GdiplusStartupInput <?>
         UnicodeFileName           db 32 dup(?)
         BmpImage                  dd ?
@@ -171,6 +188,9 @@ start:
     invoke LoadBitmap, hInstance, foguete
     mov    hFoguete, eax
 
+    invoke LoadBitmap, hInstance, bigAsteroid
+    mov hBigAsteroid, eax
+
     ; eax tem o ponteiro para uma string que mostra toda linha de comando.
     ;invoke wsprintf,addr buffer,chr$("%s"), eax
     ;invoke MessageBox,NULL,ADDR buffer,ADDR szDisplayName,MB_OK
@@ -180,6 +200,16 @@ start:
     invoke ExitProcess,eax       ; cleanup & return to operating system
 
 ; #########################################################################
+
+; ########################################################################
+MyThread PROC
+
+    mov     eax,[esp+4]                ;EAX = 12345678h
+    ; .while isAlive == 1
+    ; andar com os asteroids
+    INVOKE  ExitThread,eax
+
+MyThread ENDP
 
 WinMain proc hInst     :DWORD,
              hPrevInst :DWORD,
@@ -303,6 +333,8 @@ WndProc proc hWin   :DWORD,
     LOCAL hOld   :DWORD
 
     LOCAL memDC  :DWORD
+    LOCAL memDC2 :DWORD
+    LOCAL hBitmap:DWORD
 
     ; cuidado ao declarar variaveis locais pois ao terminar o procedimento
     ; seu valor é limpado colocado lixo no lugar.
@@ -434,26 +466,41 @@ WndProc proc hWin   :DWORD,
             ; aqui entra o desejamos desenha, escrever e outros.
             mov    hDC, eax
 
-            invoke CreateCompatibleDC, hDC
-            mov   memDC, eax
-            invoke SelectObject, memDC, hBmp
-            mov  hOld, eax  
-
-            invoke BitBlt, hDC, 0, 0,800,450, memDC, 10,10, SRCCOPY
-            invoke SelectObject,hDC,hOld
-            invoke DeleteDC,memDC  
-
-            invoke CreateCompatibleDC, hDC
-            mov   memDC, eax
-            invoke SelectObject, memDC, hFoguete
-            mov  hOld, eax  
+            .if asteroidCount == 0
+            ; add 4 asteroids
+            .endif
+            .if isOneAlive == 1
+            ; repaint 1st asteroid
+            .endif
+            .if isTwoAlive == 1
+            ; repaint 2nd asteroid
+            .endif
+            .if isThreeAlive == 1
+            ; repaint 3rd asteroid
+            .endif
+            .if isFourAlive == 1
+            ; repaint 4th asteroid
+            .endif
             
-            invoke TransparentBlt, hDC, xPosition, yPosition, 50, 50, memDC, rotation, 0, 200, 200, 16777215
-            invoke SelectObject,hDC,hOld
-            invoke DeleteDC,memDC
+            invoke CreateCompatibleDC, hDC
+            mov   memDC, eax
+            invoke CreateCompatibleDC, hDC
+            mov   memDC2, eax
+            invoke CreateCompatibleBitmap, hDC, 800, 450
+            mov hBitmap, eax
+            invoke SelectObject, memDC, hBitmap
 
-            invoke SelectObject,hDC,hOld
-            invoke DeleteDC,memDC  
+            invoke SelectObject, memDC, hBmp
+            invoke BitBlt, hDC, 0, 0,800,450, memDC, 10,10, SRCCOPY
+
+            invoke SelectObject, memDC2, hFoguete
+            invoke TransparentBlt, memDC, xPosition, yPosition, 50, 50, memDC2, rotation, 0, 200, 200, 16777215
+
+            invoke SelectObject, memDC2, hBigAsteroid
+            invoke TransparentBlt, memDC, 0, 0, 100, 100, memDC2, 0, 0, 240, 272, 16777215
+
+            invoke DeleteDC,memDC
+            invoke DeleteDC,memDC2
 
             invoke EndPaint,hWin,ADDR Ps
             return  0
@@ -468,6 +515,8 @@ WndProc proc hWin   :DWORD,
       invoke  GdipCreateBitmapFromFile,ADDR UnicodeFileName,ADDR BmpImage
 									
       invoke  GdipCreateHBITMAPFromBitmap,BmpImage,ADDR hBmp,0
+
+      INVOKE  CreateThread,0,0,MyThread,12345678h,0,offset dwThreadId
     ; --------------------------------------------------------------------
     ; This message is sent to WndProc during the CreateWindowEx function
     ; call and is processed before it returns. This is used as a position
@@ -518,7 +567,7 @@ WndProc proc hWin   :DWORD,
 
 WndProc endp
 
-; ########################################################################
+
 
 TopXY proc wDim:DWORD, sDim:DWORD
 

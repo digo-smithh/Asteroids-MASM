@@ -3,13 +3,16 @@
 
 #define ICONE 500
 #define FOGUETE  100
+#define BIGASTEROID 208
 
 // define icone e outros a serem utilizados
 ICONE ICON MOVEABLE PURE LOADONCALL DISCARDABLE "logo.ICO"
 
 // INDICA O BITMAP A SER UTILIZADO
 
+BIGASTEROID BITMAP MOVEABLE PURE LOADONCALL DISCARDABLE "asteroid_big.bmp"
 FOGUETE BITMAP MOVEABLE PURE LOADONCALL DISCARDABLE "rocket.bmp"
+
 
 
 // cria a estrutura do menu
