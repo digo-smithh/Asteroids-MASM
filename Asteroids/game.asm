@@ -117,7 +117,7 @@
     ; define o numero da mensagem criada pelo usuario
     WM_FINISH equ WM_USER+100h  ; o numero da mensagem é a ultima + 100h
     foguete    equ     100
-    bigAsteroid    equ     400
+    bigAsteroid    equ     208
     CREF_TRANSPARENT  EQU 00FF00FFh
 
 
@@ -466,21 +466,21 @@ WndProc proc hWin   :DWORD,
             ; aqui entra o desejamos desenha, escrever e outros.
             mov    hDC, eax
 
-            .if asteroidCount == 0
+            ;.if asteroidCount == 0
             ; add 4 asteroids
-            .endif
-            .if isOneAlive == 1
+            ;.endif
+            ;.if isOneAlive == 1
             ; repaint 1st asteroid
-            .endif
-            .if isTwoAlive == 1
+            ;.endif
+            ;.if isTwoAlive == 1
             ; repaint 2nd asteroid
-            .endif
-            .if isThreeAlive == 1
+           ; .endif
+            ;.if isThreeAlive == 1
             ; repaint 3rd asteroid
-            .endif
-            .if isFourAlive == 1
+            ;.endif
+            ;.if isFourAlive == 1
             ; repaint 4th asteroid
-            .endif
+            ;.endif
             
             invoke CreateCompatibleDC, hDC
             mov   memDC, eax
@@ -497,7 +497,7 @@ WndProc proc hWin   :DWORD,
             invoke TransparentBlt, memDC, xPosition, yPosition, 50, 50, memDC2, rotation, 0, 200, 200, 16777215
 
             invoke SelectObject, memDC2, hBigAsteroid
-            invoke TransparentBlt, memDC, 0, 0, 100, 100, memDC2, 0, 0, 240, 272, 16777215
+            invoke TransparentBlt, memDC, 50, 50, 100, 100, memDC2, 0, 0, 242, 271, 16777215
 
             invoke DeleteDC,memDC
             invoke DeleteDC,memDC2
@@ -516,7 +516,7 @@ WndProc proc hWin   :DWORD,
 									
       invoke  GdipCreateHBITMAPFromBitmap,BmpImage,ADDR hBmp,0
 
-      INVOKE  CreateThread,0,0,MyThread,12345678h,0,offset dwThreadId
+      ;INVOKE  CreateThread,0,0,MyThread,12345678h,0,offset dwThreadId
     ; --------------------------------------------------------------------
     ; This message is sent to WndProc during the CreateWindowEx function
     ; call and is processed before it returns. This is used as a position
