@@ -13,7 +13,6 @@ include \masm32\include\comdlg32.inc
 include \masm32\include\shell32.inc
 include \masm32\Include\msimg32.inc
 include \masm32\Include\oleaut32.inc
-include \masm32\irvine\Irvine32.inc
 
 includelib \masm32\lib\user32.lib
 includelib \masm32\lib\kernel32.lib
@@ -22,7 +21,6 @@ includelib \masm32\lib\gdiplus.lib
 includelib \masm32\lib\Comctl32.lib
 includelib \masm32\lib\comdlg32.lib
 includelib \masm32\lib\shell32.lib
-includelib \masm32\irvine\Irvine32.lib
 includelib \masm32\lib\msimg32.lib
 includelib \masm32\lib\oleaut32.lib
 includelib \masm32\lib\msvcrt.lib
@@ -53,11 +51,12 @@ ENDM
   TopXY PROTO   :DWORD,:DWORD
 
 .const
-    ICONE   equ     500 
-    WM_FINISH equ WM_USER+100h  
-    foguete    equ     100
-    bigAsteroid    equ     208
-    CREF_TRANSPARENT  EQU 00FF00FFh
+    ICONE            equ 500 
+    WM_FINISH        equ WM_USER+100h  
+    foguete          equ 100
+    bigAsteroid      equ 208
+    home             equ 408
+    CREF_TRANSPARENT equ 00FF00FFh
 
 .data
     szDisplayName        db "Asteroids",0
@@ -76,14 +75,14 @@ ENDM
     isTwoAlive           dd 1  
     isThreeAlive         dd 1  
     isFourAlive          dd 1
-    xOne                 dd 1       
-    yOne                 dd 1        
-    xTwo                 dd 1   
-    yTwo                 dd 1   
-    xThree               dd 1   
-    yThree               dd 1  
-    xFour                dd 1   
-    yFour                dd 1 
+    xOne                 dd 0       
+    yOne                 dd 220        
+    xTwo                 dd 280   
+    yTwo                 dd 0
+    xThree               dd 440   
+    yThree               dd 340  
+    xFour                dd 715 
+    yFour                dd 140
     direction1           dd 1
     direction2           dd 1
     direction3           dd 1
@@ -107,18 +106,34 @@ ENDM
 .code
   start:
     randomGeneratorDirection PROC
-        call Randomize               
+        invoke  GetTickCount
+        invoke  nseed, eax
+        invoke  nrandom, 7
+        invoke  dwtoa, eax, offset direction1
+        invoke  StdOut, offset direction1   
 
-        mov  ax,8                 
-        call RandomRange
-        mov  direction1,ax 
-        call RandomRange
-        mov  direction2,ax  
-        call RandomRange
-        mov  direction3,ax  
-        call RandomRange
-        mov  direction4,ax          
+        invoke  GetTickCount
+        invoke  nseed, eax
+        invoke  nrandom, 7
+        invoke  dwtoa, eax, offset direction2
+        invoke  StdOut, offset direction2    
+
+        invoke  GetTickCount
+        invoke  nseed, eax
+        invoke  nrandom, 7
+        invoke  dwtoa, eax, offset direction3
+        invoke  StdOut, offset direction3    
+
+        invoke  GetTickCount
+        invoke  nseed, eax
+        invoke  nrandom, 7
+        invoke  dwtoa, eax, offset direction4
+        invoke  StdOut, offset direction4         
     randomGeneratorDirection ENDP
+
+    loadImages proc
+        
+    loadImages endp
 
     ; myThread PROC
 
@@ -128,21 +143,74 @@ ENDM
     ;         ; gerar asteroides
     ;       .elseif asteroidCount != 0
     ;         ; andar com asteroides na direcao
-    ;         .if direction == 1
+    ;         .if direction1 == 0
+    ;          sub yOne, 6
+    ;         .elseif direction1 == 1
+    ;          sub yOne, 6
+    ;          add xOne, 6
+    ;         .elseif direction1 == 2
+    ;          add xOne, 6
+    ;         .elseif direction1 == 3
+    ;          add yOne, 6
+    ;          add xOne, 6
+    ;         .elseif direction1 == 4
+    ;          add yOne, 6
+    ;         .elseif direction1 == 5
     ;         ;move
-    ;         .elseif direction == 2
+    ;         .elseif direction1 == 6
     ;         ;move
-    ;         .elseif direction == 3
+    ;         .elseif direction1 == 7
     ;         ;move
-    ;         .elseif direction == 4
+    ;         .endif
+    ;         .if direction2 == 0
     ;         ;move
-    ;         .elseif direction == 5
+    ;         .elseif direction2 == 1
     ;         ;move
-    ;         .elseif direction == 6
+    ;         .elseif direction2 == 2
     ;         ;move
-    ;         .elseif direction == 7
+    ;         .elseif direction2 == 3
     ;         ;move
-    ;         .elseif direction == 8
+    ;         .elseif direction2 == 4
+    ;         ;move
+    ;         .elseif direction2 == 5
+    ;         ;move
+    ;         .elseif direction2 == 6
+    ;         ;move
+    ;         .elseif direction2 == 7
+    ;         ;move
+    ;         .endif
+    ;         .if direction3 == 0
+    ;         ;move
+    ;         .elseif direction3 == 1
+    ;         ;move
+    ;         .elseif direction3 == 2
+    ;         ;move
+    ;         .elseif direction3 == 3
+    ;         ;move
+    ;         .elseif direction3 == 4
+    ;         ;move
+    ;         .elseif direction3 == 5
+    ;         ;move
+    ;         .elseif direction3 == 6
+    ;         ;move
+    ;         .elseif direction3 == 7
+    ;         ;move
+    ;         .endif
+    ;         .if direction4 == 0
+    ;         ;move
+    ;         .elseif direction4 == 1
+    ;         ;move
+    ;         .elseif direction4 == 2
+    ;         ;move
+    ;         .elseif direction4 == 3
+    ;         ;move
+    ;         .elseif direction4 == 4
+    ;         ;move
+    ;         .elseif direction4 == 5
+    ;         ;move
+    ;         .elseif direction4 == 6
+    ;         ;move
+    ;         .elseif direction4 == 7
     ;         ;move
     ;         .endif
     ;       .endif
@@ -162,6 +230,11 @@ ENDM
 
     invoke LoadBitmap, hInstance, bigAsteroid
     mov hBigAsteroid, eax
+
+    invoke LoadBitmap, hInstance, home
+    mov    hHomeScreen, eax
+
+    
     invoke WinMain,hInstance,NULL,CommandLine,SW_SHOWDEFAULT
     
     invoke ExitProcess,eax       
@@ -363,10 +436,27 @@ ENDM
       Invoke RedrawWindow, hWin, NULL, NULL, RDW_UPDATENOW + RDW_INVALIDATE + RDW_ALLCHILDREN
 
       .elseif wParam == VK_SPACE
+          .if gameStart == 0
+        mov gameStart, 1
+        Invoke RedrawWindow, hWin, NULL, NULL, RDW_UPDATENOW + RDW_INVALIDATE + RDW_ALLCHILDREN 
 
+        .elseif gameStart != 0
+          ;atirar
+        .endif
       .endif
             
     .elseif uMsg == WM_FINISH
+  
+    .elseif uMsg == WM_CREATE
+      ;invoke loadImages
+
+      mov     eax,OFFSET StartupInfo
+      mov     GdiplusStartupInput.GdiplusVersion[eax],1
+
+      invoke  GdiplusStartup,ADDR token,ADDR StartupInfo,0 
+      invoke  UnicodeStr,ADDR filename,ADDR UnicodeFileName            
+      invoke  GdipCreateBitmapFromFile,ADDR UnicodeFileName,ADDR BmpImage          
+      invoke  GdipCreateHBITMAPFromBitmap,BmpImage,ADDR hBmp,0
         
     .elseif uMsg == WM_PAINT
 
@@ -378,10 +468,13 @@ ENDM
           invoke CreateCompatibleDC, hDC
           invoke SelectObject, memDC, hHomeScreen
           invoke BitBlt, hDC, 0, 0,800,450, memDC, 10,10, SRCCOPY
+          invoke DeleteDC,memDC
+
+          invoke EndPaint,hWin,ADDR Ps
+          return  0
       .elseif
           invoke BeginPaint,hWin,ADDR Ps    
           mov    hDC, eax
-          
           invoke CreateCompatibleDC, hDC
           mov   memDC, eax
           invoke CreateCompatibleDC, hDC
@@ -394,16 +487,16 @@ ENDM
           invoke TransparentBlt, hDC, xPosition, yPosition, 50, 50, memDC, rotation, 0, 200, 200, 16777215
 
           invoke SelectObject, memDC, hBigAsteroid
-          invoke TransparentBlt, hDC, 0, 200, 70, 70, memDC, 0, 0, 242, 271, 16777215
+          invoke TransparentBlt, hDC, xOne, yOne, 70, 70, memDC, 0, 0, 242, 271, 16777215
 
           invoke SelectObject, memDC, hBigAsteroid
-          invoke TransparentBlt, hDC, 400, 0, 70, 70, memDC, 0, 0, 242, 271, 16777215
+          invoke TransparentBlt, hDC, xTwo, yTwo, 70, 70, memDC, 0, 0, 242, 271, 16777215
 
           invoke SelectObject, memDC, hBigAsteroid
-          invoke TransparentBlt, hDC, 400, 400, 70, 70, memDC, 0, 0, 242, 271, 16777215
+          invoke TransparentBlt, hDC, xThree, yThree, 70, 70, memDC, 0, 0, 242, 271, 16777215
 
           invoke SelectObject, memDC, hBigAsteroid
-          invoke TransparentBlt, hDC, 800, 400, 70, 70, memDC, 0, 0, 242, 271, 16777215
+          invoke TransparentBlt, hDC, xFour, yFour, 70, 70, memDC, 0, 0, 242, 271, 16777215 
 
           invoke DeleteDC,memDC
 
@@ -411,18 +504,7 @@ ENDM
           return  0
     .endif
 
-    .elseif uMsg == WM_CREATE
-      mov     eax,OFFSET StartupInfo
-      mov     GdiplusStartupInput.GdiplusVersion[eax],1
-
-      invoke  GdiplusStartup,ADDR token,ADDR StartupInfo,0 
-      invoke  UnicodeStr,ADDR filename,ADDR UnicodeFileName
-								
-      invoke  GdipCreateBitmapFromFile,ADDR UnicodeFileName,ADDR BmpImage
-									
-      invoke  GdipCreateHBITMAPFromBitmap,BmpImage,ADDR hBmp,0
-
-      ;INVOKE  CreateThread,0,0,myThread,12345678h,0,offset dwThreadId
+    invoke  CreateThread,0,0,myThread,12345678h,0,offset dwThreadId
     
     .elseif uMsg == WM_CLOSE
 
