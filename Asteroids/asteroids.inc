@@ -128,26 +128,24 @@ tiroNave ends
     meteoroP               dd 0
 
     ; Tiro do Foguete bitmaps:
-    A1_top_left       dd 0
-    A1_top            dd 0
-    A1_top_right      dd 0
-    A1_right          dd 0
-    A1_down_right     dd 0
-    A1_down           dd 0
-    A1_down_left      dd 0
-    A1_left           dd 0
-    A1_ground         dd 0
+    TF_top_left       dd 0
+    TF_top            dd 0
+    TF_top_right      dd 0
+    TF_right          dd 0
+    TF_down_right     dd 0
+    TF_down           dd 0
+    TF_down_left      dd 0
+    TF_left           dd 0
 
     ; Tiro da Nave bitmaps:
-    A2_top_left       dd 0
-    A2_top            dd 0
-    A2_top_right      dd 0
-    A2_right          dd 0
-    A2_down_right     dd 0
-    A2_down           dd 0
-    A2_down_left      dd 0
-    A2_left           dd 0
-    A2_ground         dd 0
+    TN_top_left       dd 0
+    TN_top            dd 0
+    TN_top_right      dd 0
+    TN_right          dd 0
+    TN_down_right     dd 0
+    TN_down           dd 0
+    TN_down_left      dd 0
+    TN_left           dd 0
 
     ; Vida bitmaps:
     Vida         dd 0
