@@ -31,8 +31,9 @@ ENDM
 .const
     ICONE            equ 500 
     WM_FINISH        equ WM_USER+100h  
-    foguete          equ 100
-    bigAsteroid      equ 208
+    fogueteConst          equ 100
+    bigAsteroidConst      equ 208
+    mediumAsteroid   equ 216
     home             equ 408
     CREF_TRANSPARENT equ 00FF00FFh
 
@@ -205,7 +206,7 @@ ENDM
     invoke LoadBitmap, hInstance, foguete
     mov    hFoguete, eax
 
-    invoke LoadBitmap, hInstance, bigAsteroid
+    invoke LoadBitmap, hInstance, bigAsteroidConst
     mov hBigAsteroid, eax
 
     invoke LoadBitmap, hInstance, home
@@ -481,7 +482,7 @@ ENDM
           return  0
     .endif
 
-    invoke  CreateThread,0,0,myThread,12345678h,0,offset dwThreadId
+    ;invoke  CreateThread,0,0,myThread,12345678h,0,offset dwThreadId
     
     .elseif uMsg == WM_CLOSE
 

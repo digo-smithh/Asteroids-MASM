@@ -39,34 +39,35 @@ foguete struct
     direction             BYTE 0
 foguete ends
 
-tiro struct
+tiroFoguete struct
     tiroObj               gameObject <>
     remainingDistance     DWORD 0    ; A DISTANCIA A SER PERCORRIDA
     direction             BYTE  0    
-tiro ends 
+tiroFoguete ends 
 
 
 asteroideG struct
     asteroideObj          gameObject <>
     direction             BYTE 0
     destroyed             BYTE 0 ; PARA VERIFICAR SE FOI DESTRUIDO PELO FOGUETE OU PELO TIRO
-asteroidG ends
+asteroideG ends
 
 asteroideM struct
     asteroideObj          gameObject <>
     direction             BYTE 0
     destroyed             BYTE 0 ; PARA VERIFICAR SE FOI DESTRUIDO PELO FOGUETE OU PELO TIRO
-asteroidM ends
+asteroideM ends
 
 asteroideP struct
     asteroideObj          gameObject <>
     direction             BYTE 0
     destroyed             BYTE 0 ; PARA VERIFICAR SE FOI DESTRUIDO PELO FOGUETE OU PELO TIRO
-asteroidP ends
+asteroideP ends
 
 nave struct
     naveObj               gameObject <>
     direction             BYTE 0 ; Ele muda de direção a cada 1,5s (apenas sua speed Y varia, sua speed X é definida no momento de aparecimento)
+    destroyed             BYTE 0 ;
 nave ends
 
 tiroNave struct
@@ -158,12 +159,12 @@ tiroNave ends
     acabou byte 0                                ; controla o estado do jogo, se está rolando ou acabou
 
     ; Players
-    fogueteJogador foguete <<<100,350>,  <0,0>>, 0, 4, D_TOP>  ; inicializando o foguete na direção do top
+    fogueteJogador foguete <<<100,350>,  <FOGUETENAVE_SPEED,FOGUETENAVE_SPEED>>, 0, 4, D_TOP>  ; inicializando o foguete na direção do top
 
-    naveInimiga nave
+    naveInimiga nave <<<-50, -50>, <FOGUETENAVE_SPEED, FOGUETENAVE_SPEED>>, 0, 0> 
     
-    tiroFoguete arrow <<<-50, -50>, <FOGUETENAVE_SPEED, FOGUETENAVE_SPEED>>, 0, 1>  
-    tiroNave arrow <<<-50, -50>, <FOGUETENAVE_SPEED, FOGUETENAVE_SPEED>>, 0, 1>
+    tiroF tiroFoguete <<<-50, -50>, <TIRO_SPEED, TIRO_SPEED>>, 0, 1>  
+    tiroN tiroNave <<<-50, -50>, <TIRO_SPEED, TIRO_SPEED>>, 0, 1>
 
     asteroideG1 asteroideG <<<-50, -50>, <ASTEROIDG_SPEED, ASTEROIDG_SPEED>>, 0, 0> 
     asteroideG2 asteroideG <<<-50, -50>, <ASTEROIDG_SPEED, ASTEROIDG_SPEED>>, 0, 0> 
