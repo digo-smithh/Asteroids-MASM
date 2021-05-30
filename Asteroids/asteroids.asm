@@ -72,10 +72,6 @@ ENDM
     hitpointEnd               POINT <>
     threadID                  DWORD ?    
     hEventStart               HANDLE ?
-    hBmp                      dd ?
-    hFoguete                  dd ?
-    hHomeScreen               dd ?
-    hBigAsteroid              dd ?
     StartupInfo               GdiplusStartupInput <?>
     UnicodeFileName           db 32 dup(?)
     BmpImage                  dd ?
@@ -203,14 +199,17 @@ ENDM
     invoke  GetCommandLine    
     mov     CommandLine, eax
 
-    invoke LoadBitmap, hInstance, foguete
-    mov    hFoguete, eax
+    ; Invoca-se os bitmaps
+    invoke LoadBitmap, hInstance, home
+    mov    h_inicio, eax
+
+    invoke LoadBitmap, hInstance, fogueteConst
+    mov    foguete_spritesheet, eax
 
     invoke LoadBitmap, hInstance, bigAsteroidConst
-    mov hBigAsteroid, eax
+    mov meteoroG, eax
 
-    invoke LoadBitmap, hInstance, home
-    mov    hHomeScreen, eax
+    
 
     
     invoke WinMain,hInstance,NULL,CommandLine,SW_SHOWDEFAULT
@@ -247,8 +246,8 @@ ENDM
       mov wc.hIconSm,        0
       invoke RegisterClassEx, ADDR wc     
 
-      mov Wwd, 800
-      mov Wht, 450
+      mov Wwd, WINDOW_SIZE_X
+      mov Wht, WINDOW_SIZE_Y
 
       invoke GetSystemMetrics,SM_CXSCREEN 
       invoke TopXY,Wwd,eax
@@ -434,7 +433,7 @@ ENDM
       invoke  GdiplusStartup,ADDR token,ADDR StartupInfo,0 
       invoke  UnicodeStr,ADDR filename,ADDR UnicodeFileName            
       invoke  GdipCreateBitmapFromFile,ADDR UnicodeFileName,ADDR BmpImage          
-      invoke  GdipCreateHBITMAPFromBitmap,BmpImage,ADDR hBmp,0
+      invoke  GdipCreateHBITMAPFromBitmap,BmpImage,ADDR h_universo,0
         
     .elseif uMsg == WM_PAINT
 
@@ -444,7 +443,7 @@ ENDM
           invoke CreateCompatibleDC, hDC
           mov   memDC, eax
           invoke CreateCompatibleDC, hDC
-          invoke SelectObject, memDC, hHomeScreen
+          invoke SelectObject, memDC, h_inicio
           invoke BitBlt, hDC, 0, 0,800,450, memDC, 10,10, SRCCOPY
           invoke DeleteDC,memDC
 
@@ -458,22 +457,22 @@ ENDM
           invoke CreateCompatibleDC, hDC
           invoke SelectObject, memDC, hBitmap
 
-          invoke SelectObject, memDC, hBmp
+          invoke SelectObject, memDC, h_universo
           invoke BitBlt, hDC, 0, 0,800,450, memDC, 10,10, SRCCOPY
 
-          invoke SelectObject, memDC, hFoguete
+          invoke SelectObject, memDC, foguete_spritesheet
           invoke TransparentBlt, hDC, xPosition, yPosition, 50, 50, memDC, rotation, 0, 200, 200, 16777215
 
-          invoke SelectObject, memDC, hBigAsteroid
+          invoke SelectObject, memDC, meteoroG
           invoke TransparentBlt, hDC, xOne, yOne, 70, 70, memDC, 0, 0, 242, 271, 16777215
 
-          invoke SelectObject, memDC, hBigAsteroid
+          invoke SelectObject, memDC, meteoroG
           invoke TransparentBlt, hDC, xTwo, yTwo, 70, 70, memDC, 0, 0, 242, 271, 16777215
 
-          invoke SelectObject, memDC, hBigAsteroid
+          invoke SelectObject, memDC, meteoroG
           invoke TransparentBlt, hDC, xThree, yThree, 70, 70, memDC, 0, 0, 242, 271, 16777215
 
-          invoke SelectObject, memDC, hBigAsteroid
+          invoke SelectObject, memDC, meteoroG
           invoke TransparentBlt, hDC, xFour, yFour, 70, 70, memDC, 0, 0, 242, 271, 16777215 
 
           invoke DeleteDC,memDC
