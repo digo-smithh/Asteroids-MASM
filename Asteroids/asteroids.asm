@@ -1,30 +1,8 @@
 .386              
 .model flat, stdcall  
-option casemap :none   
+option casemap :none
 
-include \masm32\include\masm32rt.inc
-include \masm32\include\windows.inc
-include \masm32\include\user32.inc
-include \masm32\include\kernel32.inc
-include \masm32\include\gdi32.inc
-include \masm32\include\gdiplus.inc
-include \masm32\include\Comctl32.inc
-include \masm32\include\comdlg32.inc
-include \masm32\include\shell32.inc
-include \masm32\Include\msimg32.inc
-include \masm32\Include\oleaut32.inc
-
-includelib \masm32\lib\user32.lib
-includelib \masm32\lib\kernel32.lib
-includelib \masm32\LIB\gdi32.lib
-includelib \masm32\lib\gdiplus.lib
-includelib \masm32\lib\Comctl32.lib
-includelib \masm32\lib\comdlg32.lib
-includelib \masm32\lib\shell32.lib
-includelib \masm32\lib\msimg32.lib
-includelib \masm32\lib\oleaut32.lib
-includelib \masm32\lib\msvcrt.lib
-includelib \masm32\lib\masm32.lib
+include asteroids.inc
 
 szText MACRO Name, Text:VARARG
   LOCAL lbl
@@ -62,7 +40,6 @@ ENDM
     szDisplayName        db "Asteroids",0
     filename             db "vialactea.png",0
     CommandLine          dd 0
-    hWnd                 dd 0
     buffer               db 128 dup(0)
     hInstance            dd 0
     rotation             dd 0
