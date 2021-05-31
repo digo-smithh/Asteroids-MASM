@@ -120,6 +120,8 @@ tiroNave ends
 
     ; Player spritesheet
     foguete_spritesheet    dd 0
+    ; Nave Inimiga Bitmap
+    nave                   dd 0
     ; MeteoroG
     meteoroG               dd 0
     ; MeteoroM
@@ -148,7 +150,7 @@ tiroNave ends
     TN_left           dd 0
 
     ; Vida bitmaps:
-    Vida         dd 0
+    vida         dd 0
 
     ;test_header_format  db  "A: %d",13,10,0
     ;buffer              db 256 dup(?)
@@ -157,7 +159,7 @@ tiroNave ends
     acabou byte 0                                ; controla o estado do jogo, se está rolando ou acabou
 
     ; Players
-    fogueteJogador foguete <<<100,350>,  <FOGUETENAVE_SPEED,FOGUETENAVE_SPEED>>, 0, 4, D_TOP>  ; inicializando o foguete na direção do top
+    fogueteJogador foguete <<<375, 175>,  <FOGUETENAVE_SPEED,FOGUETENAVE_SPEED>>, 0, 4, D_TOP>  ; inicializando o foguete na direção do top
 
     naveInimiga nave <<<-50, -50>, <FOGUETENAVE_SPEED, FOGUETENAVE_SPEED>>, 0, 0> 
     
