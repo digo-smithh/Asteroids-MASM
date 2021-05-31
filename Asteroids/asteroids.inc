@@ -121,7 +121,7 @@ tiroNave ends
     ; Player spritesheet
     foguete_spritesheet    dd 0
     ; Nave Inimiga Bitmap
-    nave                   dd 0
+    naveInimiga_bitmap     dd 0
     ; MeteoroG
     meteoroG               dd 0
     ; MeteoroM

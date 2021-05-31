@@ -31,13 +31,6 @@ ENDM
 .const
     ICONE            equ 500 
     WM_FINISH        equ WM_USER+100h  
-    ;fogueteConst     equ 100
-    ;bigAsteroidConst equ 208
-    ;mediumAsteroidConst equ 209
-    ;smallAsteroidConst equ 210
-    ;universoConst    equ 409
-    ;mediumAsteroid   equ 216
-    ;home             equ 408
     CREF_TRANSPARENT equ 00FF00FFh
 
 .data
@@ -197,65 +190,68 @@ ENDM
     invoke  GetCommandLine    
     mov     CommandLine, eax
 
+
     ; Invoca-se os bitmaps
+    ;loadImages proc
+      ; Backgrounds
+      invoke LoadBitmap, hInstance, 130
+      mov    h_inicio, eax
+      invoke LoadBitmap, hInstance, 131
+      mov h_universo, eax
 
-    ; Backgrounds
-    invoke LoadBitmap, hInstance, 130
-    mov    h_inicio, eax
-    invoke LoadBitmap, hInstance, 131
-    mov h_universo, eax
+      ; Elementos do jogo
+      invoke LoadBitmap, hInstance, 110
+      mov    foguete_spritesheet, eax
+      invoke LoadBitmap, hInstance, 115
+      mov naveInimiga_bitmap, eax
 
-    ; Elementos do jogo
-    invoke LoadBitmap, hInstance, 110
-    mov    foguete_spritesheet, eax
-    invoke LoadBitmap, hInstance, 115
-    mov nave, eax
+      invoke LoadBitmap, hInstance, 120
+      mov meteoroG, eax
+      invoke LoadBitmap, hInstance, 121
+      mov meteoroM, eax
+      invoke LoadBitmap, hInstance, 122
+      mov meteoroP, eax
 
-    invoke LoadBitmap, hInstance, 120
-    mov meteoroG, eax
-    invoke LoadBitmap, hInstance, 121
-    mov meteoroM, eax
-    invoke LoadBitmap, hInstance, 122
-    mov meteoroP, eax
+      invoke LoadBitmap, hInstance, 140
+      mov vida, eax
 
-    invoke LoadBitmap, hInstance, 140
-    mov vida, eax
+      ; Tiros do Foguete
+      invoke LoadBitmap, hInstance, 151
+      mov TF_top_left, eax
+      invoke LoadBitmap, hInstance, 152
+      mov TF_top, eax
+      invoke LoadBitmap, hInstance, 153
+      mov TF_top_right, eax
+      invoke LoadBitmap, hInstance, 154
+      mov TF_right, eax
+      invoke LoadBitmap, hInstance, 155
+      mov TF_down_right, eax
+      invoke LoadBitmap, hInstance, 156
+      mov TF_down, eax
+      invoke LoadBitmap, hInstance, 157
+      mov TF_down_left, eax
+      invoke LoadBitmap, hInstance, 158
+      mov TF_left, eax
 
-    ; Tiros do Foguete
-    invoke LoadBitmap, hInstance, 151
-    mov TF_top_left, eax
-    invoke LoadBitmap, hInstance, 152
-    mov TF_top, eax
-    invoke LoadBitmap, hInstance, 153
-    mov TF_top_right, eax
-    invoke LoadBitmap, hInstance, 154
-    mov TF_right, eax
-    invoke LoadBitmap, hInstance, 155
-    mov TF_down_right, eax
-    invoke LoadBitmap, hInstance, 156
-    mov TF_down, eax
-    invoke LoadBitmap, hInstance, 157
-    mov TF_down_left, eax
-    invoke LoadBitmap, hInstance, 158
-    mov TF_left, eax
-
-    ; Tiros da Nave
-    invoke LoadBitmap, hInstance, 159
-    mov TN_top_left, eax
-    invoke LoadBitmap, hInstance, 160
-    mov TN_top, eax
-    invoke LoadBitmap, hInstance, 161
-    mov TN_top_right, eax
-    invoke LoadBitmap, hInstance, 162
-    mov TN_right, eax
-    invoke LoadBitmap, hInstance, 163
-    mov TN_down_right, eax
-    invoke LoadBitmap, hInstance, 164
-    mov TN_down, eax
-    invoke LoadBitmap, hInstance, 165
-    mov TN_down_left, eax
-    invoke LoadBitmap, hInstance, 166
-    mov TN_left, eax
+      ; Tiros da Nave
+      invoke LoadBitmap, hInstance, 159
+      mov TN_top_left, eax
+      invoke LoadBitmap, hInstance, 160
+      mov TN_top, eax
+      invoke LoadBitmap, hInstance, 161
+      mov TN_top_right, eax
+      invoke LoadBitmap, hInstance, 162
+      mov TN_right, eax
+      invoke LoadBitmap, hInstance, 163
+      mov TN_down_right, eax
+      invoke LoadBitmap, hInstance, 164
+      mov TN_down, eax
+      invoke LoadBitmap, hInstance, 165
+      mov TN_down_left, eax
+      invoke LoadBitmap, hInstance, 166
+      mov TN_left, eax
+      ;ret
+    ;loadImages endp
 
     
     invoke WinMain,hInstance,NULL,CommandLine,SW_SHOWDEFAULT
@@ -359,7 +355,18 @@ ENDM
       LOCAL memDC2 :DWORD
       LOCAL hBitmap:DWORD
 
-    .if uMsg == WM_COMMAND
+    .IF uMsg == WM_CREATE
+      invoke loadImages
+
+      ; mov     eax,OFFSET StartupInfo
+      ; mov     GdiplusStartupInput.GdiplusVersion[eax],1
+
+      ; invoke  GdiplusStartup,ADDR token,ADDR StartupInfo,0 
+      ; invoke  UnicodeStr,ADDR filename,ADDR UnicodeFileName            
+      ; invoke  GdipCreateBitmapFromFile,ADDR UnicodeFileName,ADDR BmpImage          
+      ; invoke  GdipCreateHBITMAPFromBitmap,BmpImage,ADDR h_universo,0
+
+    .elseif uMsg == WM_COMMAND
     
       .elseif uMsg == WM_LBUTTONDOWN
             
@@ -470,16 +477,7 @@ ENDM
             
     .elseif uMsg == WM_FINISH
   
-    .elseif uMsg == WM_CREATE
-      ;invoke loadImages
-
-      ; mov     eax,OFFSET StartupInfo
-      ; mov     GdiplusStartupInput.GdiplusVersion[eax],1
-
-      ; invoke  GdiplusStartup,ADDR token,ADDR StartupInfo,0 
-      ; invoke  UnicodeStr,ADDR filename,ADDR UnicodeFileName            
-      ; invoke  GdipCreateBitmapFromFile,ADDR UnicodeFileName,ADDR BmpImage          
-      ; invoke  GdipCreateHBITMAPFromBitmap,BmpImage,ADDR h_universo,0
+    
         
     .elseif uMsg == WM_PAINT
 
@@ -492,7 +490,8 @@ ENDM
           mov   memDC, eax
           invoke CreateCompatibleDC, hDC
 
-          invoke SelectObject, memDC, h_inicio
+          mov eax, h_inicio
+          invoke SelectObject, memDC, eax
           invoke BitBlt, hDC, 0, 0,800,450, memDC, 10,10, SRCCOPY
 
           invoke DeleteDC,memDC
@@ -508,7 +507,8 @@ ENDM
           invoke CreateCompatibleDC, hDC
           invoke SelectObject, memDC, hBitmap
 
-          invoke SelectObject, memDC, h_universo
+          mov eax, h_universo
+          invoke SelectObject, memDC, eax
           invoke BitBlt, hDC, 0, 0,800,450, memDC, 10,10, SRCCOPY
           
           invoke SelectObject, memDC, foguete_spritesheet
