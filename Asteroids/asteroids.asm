@@ -356,7 +356,7 @@ ENDM
       LOCAL hBitmap:DWORD
 
     .IF uMsg == WM_CREATE
-      invoke loadImages
+      ;invoke loadImages
 
       ; mov     eax,OFFSET StartupInfo
       ; mov     GdiplusStartupInput.GdiplusVersion[eax],1
@@ -512,7 +512,8 @@ ENDM
           invoke BitBlt, hDC, 0, 0,800,450, memDC, 10,10, SRCCOPY
           
           invoke SelectObject, memDC, foguete_spritesheet
-          invoke TransparentBlt, hDC, fogueteJogador.fogueteObj.pos.x, fogueteJogador.fogueteObj.pos.y, 50, 50, memDC, rotation, 0, 200, 200, 16777215
+          ;invoke TransparentBlt, hDC, fogueteJogador.fogueteObj.pos.x, fogueteJogador.fogueteObj.pos.y, 50, 50, memDC, rotation, 0, 200, 200, 16777215
+          invoke TransparentBlt, hDC, xPosition, yPosition, 50, 50, memDC, rotation, 0, 200, 200, 16777215
 
           invoke SelectObject, memDC, meteoroG
           invoke TransparentBlt, hDC, xOne, yOne, 70, 70, memDC, 0, 0, 250, 200, 16777215
