@@ -62,10 +62,9 @@ ENDM
     direction4           dd 1
 
 .data?
-    dwThreadId dd ?
+    threadID DWORD ?
     hitpoint                  POINT <>
-    hitpointEnd               POINT <>
-    threadID                  DWORD ?    
+    hitpointEnd               POINT <> 
     hEventStart               HANDLE ?
     StartupInfo               GdiplusStartupInput <?>
     UnicodeFileName           db 32 dup(?)
@@ -73,6 +72,7 @@ ENDM
     token                     dd ?
 
 .code
+
   start:
     randomGeneratorDirection PROC
         invoke  GetTickCount
@@ -100,89 +100,89 @@ ENDM
         invoke  StdOut, offset direction4         
     randomGeneratorDirection ENDP
 
-    ; myThread PROC
-
-    ;     mov     eax,[esp+4]               
-    ;     .while isAlive == 1
-    ;       .if asteroidCount == 0
-    ;         ; gerar asteroides
-    ;       .elseif asteroidCount != 0
-    ;         ; andar com asteroides na direcao
-    ;         .if direction1 == 0
-    ;          sub yOne, 6
-    ;         .elseif direction1 == 1
-    ;          sub yOne, 6
-    ;          add xOne, 6
-    ;         .elseif direction1 == 2
-    ;          add xOne, 6
-    ;         .elseif direction1 == 3
-    ;          add yOne, 6
-    ;          add xOne, 6
-    ;         .elseif direction1 == 4
-    ;          add yOne, 6
-    ;         .elseif direction1 == 5
-    ;         ;move
-    ;         .elseif direction1 == 6
-    ;         ;move
-    ;         .elseif direction1 == 7
-    ;         ;move
-    ;         .endif
-    ;         .if direction2 == 0
-    ;         ;move
-    ;         .elseif direction2 == 1
-    ;         ;move
-    ;         .elseif direction2 == 2
-    ;         ;move
-    ;         .elseif direction2 == 3
-    ;         ;move
-    ;         .elseif direction2 == 4
-    ;         ;move
-    ;         .elseif direction2 == 5
-    ;         ;move
-    ;         .elseif direction2 == 6
-    ;         ;move
-    ;         .elseif direction2 == 7
-    ;         ;move
-    ;         .endif
-    ;         .if direction3 == 0
-    ;         ;move
-    ;         .elseif direction3 == 1
-    ;         ;move
-    ;         .elseif direction3 == 2
-    ;         ;move
-    ;         .elseif direction3 == 3
-    ;         ;move
-    ;         .elseif direction3 == 4
-    ;         ;move
-    ;         .elseif direction3 == 5
-    ;         ;move
-    ;         .elseif direction3 == 6
-    ;         ;move
-    ;         .elseif direction3 == 7
-    ;         ;move
-    ;         .endif
-    ;         .if direction4 == 0
-    ;         ;move
-    ;         .elseif direction4 == 1
-    ;         ;move
-    ;         .elseif direction4 == 2
-    ;         ;move
-    ;         .elseif direction4 == 3
-    ;         ;move
-    ;         .elseif direction4 == 4
-    ;         ;move
-    ;         .elseif direction4 == 5
-    ;         ;move
-    ;         .elseif direction4 == 6
-    ;         ;move
-    ;         .elseif direction4 == 7
-    ;         ;move
-    ;         .endif
-    ;       .endif
-
-    ;     INVOKE  ExitThread,eax
-
-    ; myThread ENDP
+    loop1 PROC 
+    myLoop:  
+      .if isAlive == 0
+      ret
+      .elseif isAlive == 1
+        .if asteroidCount == 0
+              ; gerar asteroides
+            .elseif asteroidCount != 0
+              ; andar com asteroides na direcao
+              .if direction1 == 0
+              sub yOne, 6
+              .elseif direction1 == 1
+              sub yOne, 6
+              add xOne, 6
+              .elseif direction1 == 2
+              add xOne, 6
+              .elseif direction1 == 3
+              add yOne, 6
+              add xOne, 6
+              .elseif direction1 == 4
+              add yOne, 6
+              .elseif direction1 == 5
+              ;move
+              .elseif direction1 == 6
+              ;move
+              .elseif direction1 == 7
+              ;move
+              .endif
+              .if direction2 == 0
+              ;move
+              .elseif direction2 == 1
+              ;move
+              .elseif direction2 == 2
+              ;move
+              .elseif direction2 == 3
+              ;move
+              .elseif direction2 == 4
+              ;move
+              .elseif direction2 == 5
+              ;move
+              .elseif direction2 == 6
+              ;move
+              .elseif direction2 == 7
+              ;move
+              .endif
+              .if direction3 == 0
+              ;move
+              .elseif direction3 == 1
+              ;move
+              .elseif direction3 == 2
+              ;move
+              .elseif direction3 == 3
+              ;move
+              .elseif direction3 == 4
+              ;move
+              .elseif direction3 == 5
+              ;move
+              .elseif direction3 == 6
+              ;move
+              .elseif direction3 == 7
+              ;move
+              .endif
+              .if direction4 == 0
+              ;move
+              .elseif direction4 == 1
+              ;move
+              .elseif direction4 == 2
+              ;move
+              .elseif direction4 == 3
+              ;move
+              .elseif direction4 == 4
+              ;move
+              .elseif direction4 == 5
+              ;move
+              .elseif direction4 == 6
+              ;move
+              .elseif direction4 == 7
+              ;move
+              .endif
+            .endif
+          .endif
+        loop myLoop
+      loop1 ENDP
 
     invoke GetModuleHandle, NULL 
     mov hInstance, eax
@@ -539,7 +539,9 @@ ENDM
           return  0
     .endif
 
-    ;invoke  CreateThread,0,0,myThread,12345678h,0,offset dwThreadId
+    ;mov  eax,OFFSET ThreadProc
+    invoke CreateThread,0,0,loop1,0,0,threadID ; threadID can be NULL
+    ;invoke CloseHandle,eax
     
     .elseif uMsg == WM_CLOSE
 
