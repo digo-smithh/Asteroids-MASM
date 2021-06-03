@@ -57,6 +57,8 @@ TopXY PROTO   :DWORD,:DWORD
     direction2           dd 1
     direction3           dd 1
     direction4           dd 1
+    counter              dd 0
+    randomArray          db "16372561372004356172061524", 0
 
 .data? ;SEÇÃO DE VARIÁVEIS
     threadID                  DWORD ?
@@ -70,8 +72,7 @@ TopXY PROTO   :DWORD,:DWORD
 
 .code ;CÓDIGO
   start: ;"MÉTODO MAIN"
-  
-      ; randomGeneratorDirection PROC ;PROCEDIMENTO PARA CRIAR DIREÇÕES ALEATÓRIAS
+    ;PROCEDIMENTO PARA CRIAR DIREÇÕES ALEATÓRIAS
       ;   invoke  GetTickCount
       ;   invoke  nseed, eax
       ;   invoke  nrandom, 7
@@ -94,8 +95,7 @@ TopXY PROTO   :DWORD,:DWORD
       ;   invoke  nseed, eax
       ;   invoke  nrandom, 7
       ;   invoke  dwtoa, eax, offset direction4
-      ;   invoke  StdOut, offset direction4         
-      ; randomGeneratorDirection ENDP
+      ;   invoke  StdOut, offset direction4  
 
       invoke GetModuleHandle, NULL 
       mov hInstance, eax
@@ -451,9 +451,37 @@ TopXY PROTO   :DWORD,:DWORD
 
       TopXY endp
 
+        
+      randomGeneratorDirection proc
+        .if counter > 25
+          mov counter, 0
+        .elseif counter < 25
+          mov ecx, counter
+          movzx eax, randomArray[ecx]
+          sub eax, '0'
+          mov direction1, eax
+          add counter, 1
+          mov ecx, counter
+          movzx eax, randomArray[ecx]
+          sub eax, '0'
+          mov direction2, eax
+          add counter, 1
+          mov ecx, counter
+          movzx eax, randomArray[ecx]
+          sub eax, '0'
+          mov direction3, eax
+          add counter, 1
+          mov ecx, counter
+          movzx eax, randomArray[ecx]
+          sub eax, '0'
+          mov direction4, eax
+        .endif
+        ret
+      randomGeneratorDirection endp
+
       MoveAsteroids proc
         .if asteroidCount == 0
-           ;invoke randomGeneratorDirection
+           invoke randomGeneratorDirection
            mov xOne, 0
            mov yOne, 220
            mov xTwo, 280
