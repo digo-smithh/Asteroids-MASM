@@ -45,6 +45,7 @@ TopXY PROTO   :DWORD,:DWORD
     isTwoAlive           dd 1  
     isThreeAlive         dd 1  
     isFourAlive          dd 1
+    speed                dd 2
     xOne                 dd 0       
     yOne                 dd 220        
     xTwo                 dd 280   
@@ -492,90 +493,90 @@ TopXY PROTO   :DWORD,:DWORD
            mov yFour, 140
            mov asteroidCount, 4
         .elseif asteroidCount != 0
-          ; andar com asteroides na direcao
+          mov edx, speed
           .if direction1 == 0
-          sub yOne, 1
+          sub yOne, edx
           .elseif direction1 == 1
-          sub yOne, 1
-          add xOne, 1
+          sub yOne, edx
+          add xOne, edx
            .elseif direction1 == 2
-          add xOne, 1
+          add xOne, edx
           .elseif direction1 == 3
-          add yOne, 1
-          add xOne, 1
+          add yOne, edx
+          add xOne, edx
           .elseif direction1 == 4
-          add yOne, 1
+          add yOne, edx
           .elseif direction1 == 5
-          add yOne, 1
-          sub xOne, 1
+          add yOne, edx
+          sub xOne, edx
           .elseif direction1 == 6
-          sub xOne, 1
+          sub xOne, edx
           .elseif direction1 == 7
-          sub yOne, 1
-          sub xOne, 1
+          sub yOne, edx
+          sub xOne, edx
           .endif
           .if direction2 == 0
-          sub yTwo, 1
+          sub yTwo, edx
           .elseif direction2 == 1
-          sub yTwo, 1
-          add xTwo, 1
+          sub yTwo, edx
+          add xTwo, edx
           .elseif direction2 == 2
-          add xTwo, 1
+          add xTwo, edx
           .elseif direction2 == 3
-          add yTwo, 1
-          add xTwo, 1
+          add yTwo, edx
+          add xTwo, edx
           .elseif direction2 == 4
-          add yTwo, 1
+          add yTwo, edx
           .elseif direction2 == 5
-          add yTwo, 1
-          sub xTwo, 1
+          add yTwo, edx
+          sub xTwo, edx
           .elseif direction2 == 6
-          sub xTwo, 1
+          sub xTwo, edx
           .elseif direction2 == 7
-          sub yTwo, 1
-          sub xTwo, 1
+          sub yTwo, edx
+          sub xTwo, edx
           .endif
           .if direction3 == 0
-          sub yThree, 1
+          sub yThree, edx
           .elseif direction3 == 1
-          sub yThree, 1
-          add xThree, 1
+          sub yThree, edx
+          add xThree, edx
           .elseif direction3 == 2
-          add xThree, 1
+          add xThree, edx
           .elseif direction3 == 3
-          add yThree, 1
-          add xThree, 1
+          add yThree, edx
+          add xThree, edx
           .elseif direction3 == 4
-          add yThree, 1
+          add yThree, edx
           .elseif direction3 == 5
-          add yThree, 1
-          sub xThree, 1
+          add yThree, edx
+          sub xThree, edx
           .elseif direction3 == 6
-          sub xThree, 1
+          sub xThree, edx
           .elseif direction3 == 7
-          sub yThree, 1
-          sub xThree, 1
+          sub yThree, edx
+          sub xThree, edx
           .endif
           .if direction4 == 0
-          sub yFour, 1
+          sub yFour, edx
           .elseif direction4 == 1
-          sub yFour, 1
-          add xFour, 1
+          sub yFour, edx
+          add xFour, edx
           .elseif direction4 == 2
-          add xFour, 1
+          add xFour, edx
           .elseif direction4 == 3
-          add yFour, 1
-          add xFour, 1
+          add yFour, edx
+          add xFour, edx
           .elseif direction4 == 4
-          add yFour, 1
+          add yFour, edx
           .elseif direction4 == 5
-          add yFour, 1
-          sub xFour, 1
+          add yFour, edx
+          sub xFour, edx
           .elseif direction4 == 6
-          sub xFour, 1
+          sub xFour, edx
           .elseif direction4 == 7
-          sub yFour, 1
-          sub xFour, 1
+          sub yFour, edx
+          sub xFour, edx
           .endif
 
 
