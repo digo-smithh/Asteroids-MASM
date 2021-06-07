@@ -1,0 +1,53 @@
+// o nome deve ser RSRC.RC pois o bat bldall.bat utiliza esse nome e fica mais facil
+// trabalhar
+
+// define icone e outros a serem utilizados
+500 ICON MOVEABLE PURE LOADONCALL DISCARDABLE ".//assets//images//logo.ICO"
+
+; Tiros
+100 BITMAP MOVEABLE PURE LOADONCALL DISCARDABLE ".//assets//images//shoots//tiroDiagonalEsqDir.bmp"
+101 BITMAP MOVEABLE PURE LOADONCALL DISCARDABLE ".//assets//images//shoots//tiroVertical.bmp"
+102 BITMAP MOVEABLE PURE LOADONCALL DISCARDABLE ".//assets//images//shoots//tiroDiagonalDirEsq.bmp"
+103 BITMAP MOVEABLE PURE LOADONCALL DISCARDABLE ".//assets//images//shoots//tiroHorizontal.bmp"
+
+104 BITMAP MOVEABLE PURE LOADONCALL DISCARDABLE ".//assets//images//shoots//tiroDiagonalEsqDir2.bmp"
+105 BITMAP MOVEABLE PURE LOADONCALL DISCARDABLE ".//assets//images//shoots//tiroVertical2.bmp"
+106 BITMAP MOVEABLE PURE LOADONCALL DISCARDABLE ".//assets//images//shoots//tiroDiagonalDirEsq2.bmp"
+107 BITMAP MOVEABLE PURE LOADONCALL DISCARDABLE ".//assets//images//shoots//tiroHorizontal2.bmp"
+
+; Foguete e Nave
+110 BITMAP MOVEABLE PURE LOADONCALL DISCARDABLE ".//assets//images//rocket.bmp"
+115 BITMAP MOVEABLE PURE LOADONCALL DISCARDABLE ".//assets//images//nave.bmp"
+
+; Asteroides
+120 BITMAP MOVEABLE PURE LOADONCALL DISCARDABLE ".//assets//images//asteroid_big2.bmp"
+121 BITMAP MOVEABLE PURE LOADONCALL DISCARDABLE ".//assets//images//asteroid_medium.bmp"
+122 BITMAP MOVEABLE PURE LOADONCALL DISCARDABLE ".//assets//images//asteroid_small.bmp"
+
+; Backgrounds
+130 BITMAP MOVEABLE PURE LOADONCALL DISCARDABLE ".//assets//images//home.bmp"
+131 BITMAP MOVEABLE PURE LOADONCALL DISCARDABLE ".//assets//images//vialactea.bmp"
+132 BITMAP MOVEABLE PURE LOADONCALL DISCARDABLE ".//assets//images//game_over.bmp"
+
+; Vida
+140 BITMAP MOVEABLE PURE LOADONCALL DISCARDABLE ".//assets//images//vida.bmp"
+
+; Explosão
+150 BITMAP MOVEABLE PURE LOADONCALL DISCARDABLE ".//assets//images//explosion.bmp"
+
+
+
+// cria a estrutura do menu
+600 MENUEX MOVEABLE IMPURE LOADONCALL DISCARDABLE
+BEGIN
+    POPUP "&File", , , 0
+    BEGIN
+        MENUITEM "&Mensagem", 1001
+        MENUITEM "&Exit", 1000
+    END
+    POPUP "&Help", , , 0
+    BEGIN
+        MENUITEM "&About", 1900
+    END
+END
+
