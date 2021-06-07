@@ -104,6 +104,7 @@ asteroideP ends
     FOGUETE_SIZE_POINT  point <50,50>
     ASTEROIDE_SIZE_POINT  point <70,70>
     TIRO_SIZE_POINT     point <20,20>
+    NAVE_SIZE_POINT     POINT <55,55>
 
     FOGUETE_SIZE       EQU 50
     FOGUETE_HALF_SIZE  EQU FOGUETE_SIZE / 2
@@ -196,7 +197,7 @@ asteroideP ends
 
     asteroideG1 asteroideG <<<0, 0>, <ASTEROIDG_SPEED, ASTEROIDG_SPEED>>, 0, 1, 1> 
     asteroideG2 asteroideG <<<280, 0>, <ASTEROIDG_SPEED, ASTEROIDG_SPEED>>, 0, 1, 1> 
-    asteroideG3 asteroideG <<<440, 340>, <ASTEROIDG_SPEED, ASTEROIDG_SPEED>>, 0, 1, 1> 
+    asteroideG3 asteroideG <<<420, 340>, <ASTEROIDG_SPEED, ASTEROIDG_SPEED>>, 0, 1, 1> 
     asteroideG4 asteroideG <<<715, 140>, <ASTEROIDG_SPEED, ASTEROIDG_SPEED>>, 0, 1, 1> 
 
     asteroideM1 asteroideM <<<-50, -50>, <ASTEROIDM_SPEED, ASTEROIDM_SPEED>>, 0, 0> 

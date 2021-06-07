@@ -1,13 +1,14 @@
-.386              
-.model flat, stdcall  
-option casemap :none
-
-include asteroids.inc
 
 ;Program made by:
 ;Eduardo de Almeida Migueis, 19167
 ;Enzo Furegatti Spinella, 19168
 ;Rodrigo Smith Rodrigues, 19197
+
+.386              
+.model flat, stdcall  
+option casemap :none
+
+include asteroids.inc ;biblioteca contendo as importações necessárias
 
 TEXT_ MACRO your_text:VARARG 
     LOCAL text_string
@@ -24,12 +25,10 @@ szText MACRO Name, Text:VARARG
     lbl:
   ENDM
 
-
 m2m MACRO M1, M2
   push M2
   pop  M1
 ENDM
-
  
 return MACRO arg
   mov eax, arg
@@ -52,38 +51,32 @@ ENDM
     ICONE            equ 500 ; app icon
     WM_FINISH        equ WM_USER+100h  
 
-.data
-    szDisplayName        db "Asteroids",0
-    CommandLine          dd 0
-    buffer               db 128 dup(0)
-    hInstance            dd 0
-    asteroidCount        dd 0
-    isAlive              dd 1 ; jogador está vivo?
-    counter              dd 0 ;contador das vezes jogadas
-    randomArray          db "15372561372004356172061524", 0
+.data ;declarações
+    szDisplayName          db "Asteroids",0
+    CommandLine            dd 0
+    buffer                 db 128 dup(0)
+    hInstance              dd 0
+    asteroidCount          dd 0
+    isAlive                dd 1 ;jogador está vivo?
+    counter                dd 0 ;contador das vezes jogadas
+    randomArray            db "15371561372004356172061524", 0 ;vetor para posições pseudo-aleatórias
+    musica                 db "assets/musics/music.mp3",0
+    explosao_asteroide     db "assets/musics/explosion.mp3",0
+    explosao_foguete       db "assets/musics/explosion2.mp3",0
+    shoot                  db "assets/musics/shoot.mp3",0
+    game_over              db "assets/musics/game_over.mp3",0
 
-    musica               db "assets/musics/music.mp3",0
-    explosao_asteroide   db "assets/musics/explosion.mp3",0
-    explosao_foguete     db "assets/musics/explosion2.mp3",0
-    shoot                db "assets/musics/shoot.mp3",0
-    game_over            db "assets/musics/game_over.mp3",0
-
-    ; - MCI_OPEN_PARMS Structure ( API=mciSendCommand ) -
-		open_dwCallback     dd ?
-		open_wDeviceID     dd ?
-		open_lpstrDeviceType  dd ?
+		open_dwCallback        dd ?
+		open_wDeviceID         dd ?
+		open_lpstrDeviceType   dd ?
 		open_lpstrElementName  dd ?
-		open_lpstrAlias     dd ?
+		open_lpstrAlias        dd ?
+		generic_dwCallback     dd ?
+		play_dwCallback        dd ?
+		play_dwFrom            dd ?
+		play_dwTo              dd ?  
 
-		; - MCI_GENERIC_PARMS Structure ( API=mciSendCommand ) -
-		generic_dwCallback   dd ?
-
-		; - MCI_PLAY_PARMS Structure ( API=mciSendCommand ) -
-		play_dwCallback     dd ?
-		play_dwFrom       dd ?
-		play_dwTo        dd ?  
-
-.data?
+.data? ;declarações
     dwThreadId dd ?
     hitpoint                  POINT <>
     hitpointEnd               POINT <>
@@ -94,9 +87,9 @@ ENDM
     BmpImage                  dd ? ;bitmap image
     token                     dd ?
 
-.code ; início da sessão de código
+.code ;início da sessão de código
+
   start: ; "main"
-    ; invoke  uFMOD_PlaySong,TEXT_("music.xm"),0,XM_FILE
     invoke GetModuleHandle, NULL 
     mov hInstance, eax
     invoke  GetCommandLine    ; invoke cmd
@@ -104,7 +97,19 @@ ENDM
     invoke WinMain,hInstance,NULL,CommandLine,SW_SHOWDEFAULT
     invoke ExitProcess,eax ; sai do processo
 
-  ; Procedures
+
+;********************************************************INÍCIO DAS PROCEDURES********************************************************
+
+
+
+
+
+;***************************************************************************************
+;
+;                       MÉTODO PAINT QUE PRINTA O BACKGROUND
+;
+;***************************************************************************************
+
 paintBackground proc _hdc:HDC, _hMemDC:HDC ; pinta o fundo na tela
   LOCAL rect   :RECT
 
@@ -145,7 +150,16 @@ paintBackground proc _hdc:HDC, _hMemDC:HDC ; pinta o fundo na tela
   ret
 paintBackground endp ;fim da proc
 
-paintVidas proc _hdc:HDC, _hMemDC:HDC ; pinta as vidas na tela
+;***************************************************************************************
+
+
+;***************************************************************************************
+;
+;                      MÉTODO PAINT QUE PRINTA AS VIDAS NA TELA
+;
+;***************************************************************************************
+
+paintVidas proc _hdc:HDC, _hMemDC:HDC 
   invoke SelectObject, _hMemDC, vida
   mov ebx, 0
   movzx ecx, fogueteJogador.life
@@ -165,46 +179,14 @@ paintVidas proc _hdc:HDC, _hMemDC:HDC ; pinta as vidas na tela
   ret
 paintVidas endp ;fim da proc
 
-isColliding proc obj1Pos:point, obj2Pos:point, obj1Size:point, obj2Size:point  ; proc que verifica colisão 
-    push eax
-    push ebx
+;***************************************************************************************
 
-    mov eax, obj1Pos.x
-    add eax, obj1Size.x ; eax = obj1Pos.x + obj1Size.x
-    mov ebx, obj2Pos.x
-    add ebx, obj2Size.x ; ebx = obj2Pos.x + obj2Size.x
 
-    .if obj1Pos.x < ebx && eax > obj2Pos.x
-        mov eax, obj1Pos.y
-        add eax, obj1Size.y ; eax = obj1Pos.y + obj1Size.y
-        mov ebx, obj2Pos.y
-        add ebx, obj2Size.y ; ebx = obj2Pos.y + obj2Size.y
-        
-        .if obj1Pos.y < ebx && eax > obj2Pos.y
-            mov edx, TRUE
-        .else
-            mov edx, FALSE
-        .endif
-    .else
-        mov edx, FALSE
-    .endif
-
-    pop ebx
-    pop eax
-
-    ret
-isColliding endp ;fim da proc
-
-isStopped proc addrFoguete:dword ; detecta se o foguete parou
- assume edx:ptr foguete
-     mov edx, addrFoguete
-
- .if [edx].fogueteObj.speed.x == 0  && [edx].fogueteObj.speed.y == 0
-     mov [edx].stopped, 1
- .endif
-
- ret
-isStopped endp ;fim da proc
+;***************************************************************************************
+;
+;         MÉTODO PAINT QUE PRINTA O FOGUETE E A NAVE, COM POSIÇÕES DETERMINADAS
+;
+;***************************************************************************************
 
 paintFogueteNave proc _hdc:HDC, _hMemDC:HDC, rotation:DWORD
   ;FOGUETE___________________________________________
@@ -214,12 +196,6 @@ paintFogueteNave proc _hdc:HDC, _hMemDC:HDC, rotation:DWORD
   mov ebx, FOGUETE_SIZE
   mul ebx
   mov ecx, eax
-
-  invoke isStopped, addr fogueteJogador
-
-  .if fogueteJogador.stopped == 1
-      mov edx, 0
-  .endif
 
   ;________FOGUETE PAINTING________________________________________________________________________
   mov eax, fogueteJogador.fogueteObj.pos.x
@@ -253,9 +229,18 @@ paintFogueteNave proc _hdc:HDC, _hMemDC:HDC, rotation:DWORD
    ret
 paintFogueteNave endp ;fim da proc
 
+;***************************************************************************************
+
+
+;***************************************************************************************
+;
+;    MÉTODO PAINT QUE PRINTA TODOS OS PROJÉTEIS DO FOGUETE, COM POSIÇÕES DETERMINADAS
+;
+;***************************************************************************************
+
 paintBullets proc _hdc:HDC, _hMemDC:HDC ; pinta os tiros na tela
 
-    ;________FOGUETE PAINTING_____________________________________________________________
+  ;________FOGUETE PAINTING_____________________________________________________________
 
  .if tiroF.exists == 1 ; SE NÃO EXISTIR (DESAPARECEU) 
      jmp nave_panting
@@ -281,7 +266,7 @@ paintBullets proc _hdc:HDC, _hMemDC:HDC ; pinta os tiros na tela
      .elseif tiroF.direction == D_DOWN_LEFT
          invoke SelectObject, _hMemDC, TF_down_left 
 
-     .elseif tiroF.direction == D_LEFT ;left is the last possible direction
+     .elseif tiroF.direction == D_LEFT 
          invoke SelectObject, _hMemDC, TF_left  
      .endif  
  .endif
@@ -299,7 +284,6 @@ paintBullets proc _hdc:HDC, _hMemDC:HDC ; pinta os tiros na tela
 ;__NAVE PAINTING_____________________________________________________________
 nave_panting: ; pinta a nave na tela
  .if tiroN.exists == 1
-     ;invoke SelectObject, _hMemDC2, A2_ground
  .else
      .if tiroN.direction == D_TOP_LEFT
          invoke SelectObject, _hMemDC, TN_top_left
@@ -322,7 +306,7 @@ nave_panting: ; pinta a nave na tela
      .elseif tiroN.direction == D_DOWN_LEFT
          invoke SelectObject, _hMemDC, TN_down_left 
 
-     .elseif tiroN.direction == D_LEFT ;left is the last possible direction
+     .elseif tiroN.direction == D_LEFT 
          invoke SelectObject, _hMemDC, TN_left  
      .endif  
  .endif
@@ -339,7 +323,37 @@ nave_panting: ; pinta a nave na tela
   ret
 paintBullets endp ;fim da proc
 
-paintAsteroids proc _hdc:HDC, _hMemDC:HDC ; pinta os asteroides na tela
+;***************************************************************************************
+
+
+;***************************************************************************************
+;
+;        MÉTODO PAINT QUE PRINTA A NAVE ALIENÍGENA, COM POSIÇÕES DETERMINADAS
+;
+;***************************************************************************************
+
+paintNave proc _hdc:HDC, _hMemDC:HDC ; pinta as naves na tela
+  invoke SelectObject, _hMemDC, nave
+
+  mov eax, naveInimiga.naveObj.pos.x
+  mov ebx, naveInimiga.naveObj.pos.y
+
+  invoke TransparentBlt, _hdc, eax, ebx,\
+        NAVE_SIZE, NAVE_SIZE, _hMemDC,\
+        0, 0, 250, 200, 16777215
+
+paintNave endp
+
+;***************************************************************************************
+
+
+;***************************************************************************************
+;
+;        MÉTODO PAINT QUE PRINTA TODOS OS ASTERÓIDES, COM POSIÇÕES DETERMINADAS
+;
+;***************************************************************************************
+
+paintAsteroids proc _hdc:HDC, _hMemDC:HDC
   invoke SelectObject, _hMemDC, meteoroG
 
   .if asteroideG1.destroyed == 1 
@@ -365,9 +379,6 @@ paintAsteroids proc _hdc:HDC, _hMemDC:HDC ; pinta os asteroides na tela
     invoke Sleep, 200
     mov asteroideG1.asteroideObj.pos.x, -50
     mov asteroideG1.asteroideObj.pos.y, -50
-    invoke TransparentBlt, _hdc, -50, -50,\
-        ASTEROIDE_SIZE, ASTEROIDE_SIZE, _hMemDC,\
-        0, 0, 250, 200, 16777215
     mov asteroideG1.exploded, 0
   .endif
 
@@ -394,9 +405,6 @@ paintAsteroids proc _hdc:HDC, _hMemDC:HDC ; pinta os asteroides na tela
     invoke Sleep, 200
     mov asteroideG2.asteroideObj.pos.x, -50
     mov asteroideG2.asteroideObj.pos.y, -50
-    invoke TransparentBlt, _hdc, -50, -50,\
-        ASTEROIDE_SIZE, ASTEROIDE_SIZE, _hMemDC,\
-        0, 0, 250, 200, 16777215
     mov asteroideG2.exploded, 0
   .endif
 
@@ -423,9 +431,6 @@ paintAsteroids proc _hdc:HDC, _hMemDC:HDC ; pinta os asteroides na tela
     invoke Sleep, 200
     mov asteroideG3.asteroideObj.pos.x, -50
     mov asteroideG3.asteroideObj.pos.y, -50
-    invoke TransparentBlt, _hdc, -50, -50,\
-        ASTEROIDE_SIZE, ASTEROIDE_SIZE, _hMemDC,\
-        0, 0, 250, 200, 16777215
     mov asteroideG3.exploded, 0
   .endif
 
@@ -452,16 +457,76 @@ paintAsteroids proc _hdc:HDC, _hMemDC:HDC ; pinta os asteroides na tela
     invoke Sleep, 200
     mov asteroideG4.asteroideObj.pos.x, -50
     mov asteroideG4.asteroideObj.pos.y, -50
-    invoke TransparentBlt, _hdc, -50, -50,\
-        ASTEROIDE_SIZE, ASTEROIDE_SIZE, _hMemDC,\
-        0, 0, 250, 200, 16777215
     mov asteroideG4.exploded, 0
   .endif
 
   ret
 paintAsteroids endp ;fim da proc
 
-updateScreen proc ; atualiza a tela chamando o PAINT
+;***************************************************************************************
+
+
+
+;***************************************************************************************
+;
+;               MÉTODO PAINT QUE PRINTA TODOS OS ELEMENTOS A CADA 42ms
+;
+;***************************************************************************************
+
+paintThread proc p:DWORD
+  .while !acabou
+      invoke Sleep, 42 ; 24 FPS
+
+      ;invoke updateScreen
+
+      invoke InvalidateRect, hWnd, NULL, FALSE
+
+  .endw
+  ret
+paintThread endp ;fim da proc
+
+;***************************************************************************************
+
+
+
+;***************************************************************************************
+;
+;                            RESETA A POSIÇÃO DOS ASTERÓIDES
+;
+;***************************************************************************************
+
+resetarAsteroides proc
+  mov asteroideG1.asteroideObj.pos.x, 0
+  mov asteroideG1.asteroideObj.pos.y, 0
+  mov asteroideG2.asteroideObj.pos.x, 280
+  mov asteroideG2.asteroideObj.pos.y, 0
+  mov asteroideG3.asteroideObj.pos.x, 420
+  mov asteroideG3.asteroideObj.pos.y, 340
+  mov asteroideG4.asteroideObj.pos.x, 715
+  mov asteroideG4.asteroideObj.pos.y, 140
+  mov asteroideG1.exploded, 1
+  mov asteroideG2.exploded, 1
+  mov asteroideG3.exploded, 1
+  mov asteroideG4.exploded, 1
+  mov asteroideG1.destroyed, 1
+  mov asteroideG2.destroyed, 1
+  mov asteroideG3.destroyed, 1
+  mov asteroideG4.destroyed, 1
+  mov asteroidCount, 0
+  ret
+resetarAsteroides endp
+
+;***************************************************************************************
+
+
+
+;***************************************************************************************
+;
+;                     ATUALIZA A TELA CHAMANDO O EVENTO PAINT
+;
+;***************************************************************************************
+
+updateScreen proc 
   LOCAL Ps:PAINTSTRUCT
   LOCAL hMemDC:HDC
   LOCAL hBitmap:HDC
@@ -487,39 +552,52 @@ updateScreen proc ; atualiza a tela chamando o PAINT
   ret
 updateScreen endp ;fim da proc
 
-paintThread proc p:DWORD
-  .while !acabou
-      invoke Sleep, 42 ; 24 FPS
+;***************************************************************************************
 
-      ;invoke updateScreen
 
-      invoke InvalidateRect, hWnd, NULL, FALSE
 
-  .endw
+;***************************************************************************************
+;
+;        GERA UMA NOVA DIREÇÃO PARA OS ASTEÓIDES, COM NÚMEROS PSEUDO-ALEATÓRIOS
+;
+;***************************************************************************************
+
+randomGeneratorDirection proc 
+  .if counter > 25
+    mov counter, 0
+  .elseif counter < 25
+    mov ecx, counter
+    movzx eax, randomArray[ecx]
+    sub eax, '0' ; conversão ASCII
+    mov asteroideG1.direction, eax
+    add counter, 1
+    mov ecx, counter
+    movzx eax, randomArray[ecx]
+    sub eax, '0' ; conversão ASCII
+    mov asteroideG2.direction, eax
+    add counter, 1
+    mov ecx, counter
+    movzx eax, randomArray[ecx]
+    sub eax, '0' ; conversão ASCII
+    mov asteroideG3.direction, eax
+    add counter, 1
+    mov ecx, counter
+    movzx eax, randomArray[ecx]
+    sub eax, '0' ; conversão ASCII
+    mov asteroideG4.direction, eax
+  .endif
   ret
-paintThread endp ;fim da proc
+randomGeneratorDirection endp ;fim da proc
 
-moveFoguete proc uses eax addrFoguete:dword
-  assume ecx:ptr foguete
-  mov ecx, addrFoguete
+;***************************************************************************************
 
-  ; X AXIS ______________
-  mov eax, [ecx].fogueteObj.pos.x
-  mov ebx, [ecx].fogueteObj.speed.x
-  add eax, ebx
 
-  mov [ecx].fogueteObj.pos.x, eax
 
-  ; Y AXIS ______________
-  mov eax, [ecx].fogueteObj.pos.y
-  mov ebx, [ecx].fogueteObj.speed.y
-  add eax, ebx
-
-  mov [ecx].fogueteObj.pos.y, eax
-
-  assume ecx:nothing
-  ret
-moveFoguete endp ;fim da proc
+;***************************************************************************************
+;
+;              MUDA A DIREÇÃO DO FOGUETE, CONFORME OS BOTÕES SÃO CLICADOS
+;
+;***************************************************************************************
 
 updateDirection proc addrFoguete:dword  ;atualiza a direção baseado na posição dos eixos x e y
   invoke Sleep, 40
@@ -605,7 +683,184 @@ updateDirection proc addrFoguete:dword  ;atualiza a direção baseado na posiç�
   ret
 updateDirection endp ;fim da proc
 
-moveBullet proc uses eax addrTiro:dword ; atualiza a posição de um GameObj a partir de sua velocidade
+;***************************************************************************************
+
+
+
+;***************************************************************************************
+;
+;             VERIFICA SE O PROJÉTIL OU O FOGUETE COLIDIU COM O ASTERÓIDE
+;
+;***************************************************************************************
+
+isColliding proc obj1Pos:point, obj2Pos:point, obj1Size:point, obj2Size:point  ; proc que verifica colisão 
+    push eax
+    push ebx
+
+    mov eax, obj1Pos.x
+    add eax, obj1Size.x ; eax = obj1Pos.x + obj1Size.x
+    mov ebx, obj2Pos.x
+    add ebx, obj2Size.x ; ebx = obj2Pos.x + obj2Size.x
+
+    .if obj1Pos.x < ebx && eax > obj2Pos.x
+        mov eax, obj1Pos.y
+        add eax, obj1Size.y ; eax = obj1Pos.y + obj1Size.y
+        mov ebx, obj2Pos.y
+        add ebx, obj2Size.y ; ebx = obj2Pos.y + obj2Size.y
+        
+        .if obj1Pos.y < ebx && eax > obj2Pos.y
+            mov edx, TRUE
+        .else
+            mov edx, FALSE
+        .endif
+    .else
+        mov edx, FALSE
+    .endif
+
+    pop ebx
+    pop eax
+
+    ret
+isColliding endp ;fim da proc
+
+;***************************************************************************************
+
+
+
+;***************************************************************************************
+;
+;        SE O FOGUETE COLIDIU COM A NAVE, TODOS VOLTAM PARA A POSIÇÃO INICIAL
+;
+;***************************************************************************************
+
+naveFogueteColisao proc uses eax addrNaveInimiga : DWORD 
+  assume eax: ptr nave
+  mov eax, addrNaveInimiga
+
+  invoke isColliding, fogueteJogador.fogueteObj.pos, [eax].naveObj.pos, FOGUETE_SIZE_POINT, NAVE_SIZE_POINT
+  .if edx == TRUE
+    mov fogueteJogador.fogueteObj.pos.x, 375
+    mov fogueteJogador.fogueteObj.pos.y, 175
+    mov naveInimiga.naveObj.pos.x,       50
+    mov naveInimiga.naveObj.pos.y,       50
+    mov asteroideG1.asteroideObj.pos.x,  0
+    mov asteroideG1.asteroideObj.pos.y,  0
+    mov asteroideG2.asteroideObj.pos.x,  280
+    mov asteroideG2.asteroideObj.pos.y,  0
+    mov asteroideG3.asteroideObj.pos.x,  420
+    mov asteroideG3.asteroideObj.pos.y,  340
+    mov asteroideG4.asteroideObj.pos.x,  715
+    mov asteroideG4.asteroideObj.pos.y,  140
+    dec fogueteJogador.life 
+
+    ; Som da explosão do Foguete
+    mov   open_lpstrDeviceType, 0h      
+    mov   open_lpstrElementName,OFFSET explosao_foguete
+    invoke mciSendCommandA,0,MCI_OPEN, MCI_OPEN_ELEMENT,offset open_dwCallback 
+    cmp   edx,0h                 	
+    je    next		
+    next:	
+        invoke mciSendCommandA,open_wDeviceID,MCI_PLAY,MCI_NOTIFY,offset play_dwCallback
+  .endif
+
+  ret
+naveFogueteColisao endp
+
+;***************************************************************************************
+
+
+
+;***************************************************************************************
+;
+;       SE O FOGUETE COLIDIU COM O ASTERÓIDE, TODOS VOLTAM PARA A POSIÇÃO INICIAL
+;
+;***************************************************************************************
+
+asteroideFogueteColisao proc uses eax addrAsteroide : DWORD 
+  assume eax: ptr asteroideG
+  mov eax, addrAsteroide
+
+  invoke isColliding, fogueteJogador.fogueteObj.pos, [eax].asteroideObj.pos, FOGUETE_SIZE_POINT, ASTEROIDE_SIZE_POINT
+  .if edx == TRUE
+    mov fogueteJogador.fogueteObj.pos.x, 375
+    mov fogueteJogador.fogueteObj.pos.y, 175
+    mov naveInimiga.naveObj.pos.x,       50
+    mov naveInimiga.naveObj.pos.y,       50
+    mov asteroideG1.asteroideObj.pos.x,  0
+    mov asteroideG1.asteroideObj.pos.y,  0
+    mov asteroideG2.asteroideObj.pos.x,  280
+    mov asteroideG2.asteroideObj.pos.y,  0
+    mov asteroideG3.asteroideObj.pos.x,  420
+    mov asteroideG3.asteroideObj.pos.y,  340
+    mov asteroideG4.asteroideObj.pos.x,  715
+    mov asteroideG4.asteroideObj.pos.y,  140
+    dec fogueteJogador.life
+
+    ; Som da explosão do Foguete
+    mov   open_lpstrDeviceType, 0h       
+    mov   open_lpstrElementName,OFFSET explosao_foguete
+    invoke mciSendCommandA,0,MCI_OPEN, MCI_OPEN_ELEMENT,offset open_dwCallback 
+    cmp   edx,0h                 	
+    je    next		
+    next:	
+        invoke mciSendCommandA,open_wDeviceID,MCI_PLAY,MCI_NOTIFY,offset play_dwCallback
+  .endif
+
+  ret
+asteroideFogueteColisao endp
+
+;***************************************************************************************
+
+
+
+;***************************************************************************************
+;
+;             SE O PROJÉTIL COLIDIU COM O ASTERÓIDE, O METEORO EXPLODE
+;
+;***************************************************************************************
+
+asteroideBalaColisao proc uses eax addrAsteroide : DWORD 
+  assume eax: ptr asteroideG
+  mov eax, addrAsteroide
+
+  .if [eax].destroyed == 0 && [eax].exploded == 1
+    ret
+  .else
+    invoke isColliding, tiroF.tiroObj.pos, [eax].asteroideObj.pos, TIRO_SIZE_POINT, ASTEROIDE_SIZE_POINT
+    .if edx == TRUE
+      mov [eax].destroyed, 0
+      dec asteroidCount
+      mov tiroF.remainingDistance, 0
+      mov tiroF.tiroObj.pos.x, -50
+      mov tiroF.tiroObj.pos.x, -50
+      ; mov [eax].asteroideObj.pos.x, -50
+      ; mov [eax].asteroideObj.pos.y, -50
+      add fogueteJogador.points, 100
+
+      ; Som da explosão do asteroide
+      mov   open_lpstrDeviceType, 0h      
+      mov   open_lpstrElementName,OFFSET explosao_asteroide
+      invoke mciSendCommandA,0,MCI_OPEN, MCI_OPEN_ELEMENT,offset open_dwCallback 
+      cmp   edx,0h                 	
+      je    next		
+      next:	
+          invoke mciSendCommandA,open_wDeviceID,MCI_PLAY,MCI_NOTIFY,offset play_dwCallback
+    .endif
+  .endif
+
+  ret
+asteroideBalaColisao endp
+
+;***************************************************************************************
+
+
+;***************************************************************************************
+;
+;       MOVE O PROJÉTIL, INCREMENTANDO E DECREMENTANDO AS VARIÁVEIS DE POSIÇÃO
+;
+;***************************************************************************************
+
+moveBullet proc uses eax addrTiro:dword 
     assume eax:ptr tiro
     mov eax, addrTiro
 
@@ -651,133 +906,185 @@ moveBullet proc uses eax addrTiro:dword ; atualiza a posição de um GameObj a p
         .endif
     .else
         mov [eax].exists, 1
+        mov [eax].tiroObj.pos.x, -50
+        mov [eax].tiroObj.pos.y, -50
     .endif
     assume eax:nothing
     ret
 moveBullet endp ;fim da proc
 
-randomGeneratorDirection proc ; gera números pseudo-aleatorios a partir de um vetor
-  .if counter > 25
-    mov counter, 0
-  .elseif counter < 25
-    mov ecx, counter
-    movzx eax, randomArray[ecx]
-    sub eax, '0' ; conversão ASCII
-    mov asteroideG1.direction, eax
-    add counter, 1
-    mov ecx, counter
-    movzx eax, randomArray[ecx]
-    sub eax, '0' ; conversão ASCII
-    mov asteroideG2.direction, eax
-    add counter, 1
-    mov ecx, counter
-    movzx eax, randomArray[ecx]
-    sub eax, '0' ; conversão ASCII
-    mov asteroideG3.direction, eax
-    add counter, 1
-    mov ecx, counter
-    movzx eax, randomArray[ecx]
-    sub eax, '0' ; conversão ASCII
-    mov asteroideG4.direction, eax
-  .endif
+;***************************************************************************************
+
+
+
+;***************************************************************************************
+;
+;       MOVE O FOGUETE, INCREMENTANDO E DECREMENTANDO AS VARIÁVEIS DE POSIÇÃO
+;
+;***************************************************************************************
+
+moveFoguete proc uses eax addrFoguete:dword
+  assume ecx:ptr foguete
+  mov ecx, addrFoguete
+
+  ; X AXIS ______________
+  mov eax, [ecx].fogueteObj.pos.x
+  mov ebx, [ecx].fogueteObj.speed.x
+  add eax, ebx
+
+  mov [ecx].fogueteObj.pos.x, eax
+
+  ; Y AXIS ______________
+  mov eax, [ecx].fogueteObj.pos.y
+  mov ebx, [ecx].fogueteObj.speed.y
+  add eax, ebx
+
+  mov [ecx].fogueteObj.pos.y, eax
+
+  assume ecx:nothing
   ret
-randomGeneratorDirection endp ;fim da proc
+moveFoguete endp ;fim da proc
+
+;***************************************************************************************
+
+
+
+;***************************************************************************************
+;
+;       MOVE O ASTERÓIDE, INCREMENTANDO E DECREMENTANDO AS VARIÁVEIS DE POSIÇÃO
+;
+;***************************************************************************************
 
 moveAsteroids proc ;move os asteroides de acordo com 8 possíveis direções e a velocidade atribuida
   .if asteroidCount == 0
      invoke randomGeneratorDirection
+     invoke resetarAsteroides
      mov asteroidCount, 4
   .elseif asteroidCount != 0
     ; andar com asteroides na direcao
-    .if asteroideG1.direction == 0
-    sub asteroideG1.asteroideObj.pos.y, ASTEROIDG_SPEED
-    .elseif asteroideG1.direction == 1
-    sub asteroideG1.asteroideObj.pos.y, ASTEROIDG_SPEED
-    add asteroideG1.asteroideObj.pos.x, ASTEROIDG_SPEED
-     .elseif asteroideG1.direction == 2
-    add asteroideG1.asteroideObj.pos.x, ASTEROIDG_SPEED
-    .elseif asteroideG1.direction == 3
-    add asteroideG1.asteroideObj.pos.y, ASTEROIDG_SPEED
-    add asteroideG1.asteroideObj.pos.x, ASTEROIDG_SPEED
-    .elseif asteroideG1.direction == 4
-    add asteroideG1.asteroideObj.pos.y, ASTEROIDG_SPEED
-    .elseif asteroideG1.direction == 5
-    add asteroideG1.asteroideObj.pos.y, ASTEROIDG_SPEED
-    sub asteroideG1.asteroideObj.pos.x, ASTEROIDG_SPEED
-    .elseif asteroideG1.direction == 6
-    sub asteroideG1.asteroideObj.pos.x, ASTEROIDG_SPEED
-    .elseif asteroideG1.direction == 7
-    sub asteroideG1.asteroideObj.pos.y, ASTEROIDG_SPEED
-    sub asteroideG1.asteroideObj.pos.x, ASTEROIDG_SPEED
+    .if asteroideG1.destroyed == 1
+      .if asteroideG1.direction == 0
+      sub asteroideG1.asteroideObj.pos.y, ASTEROIDG_SPEED
+      .elseif asteroideG1.direction == 1
+      sub asteroideG1.asteroideObj.pos.y, ASTEROIDG_SPEED
+      add asteroideG1.asteroideObj.pos.x, ASTEROIDG_SPEED
+      .elseif asteroideG1.direction == 2
+      add asteroideG1.asteroideObj.pos.x, ASTEROIDG_SPEED
+      .elseif asteroideG1.direction == 3
+      add asteroideG1.asteroideObj.pos.y, ASTEROIDG_SPEED
+      add asteroideG1.asteroideObj.pos.x, ASTEROIDG_SPEED
+      .elseif asteroideG1.direction == 4
+      add asteroideG1.asteroideObj.pos.y, ASTEROIDG_SPEED
+      .elseif asteroideG1.direction == 5
+      add asteroideG1.asteroideObj.pos.y, ASTEROIDG_SPEED
+      sub asteroideG1.asteroideObj.pos.x, ASTEROIDG_SPEED
+      .elseif asteroideG1.direction == 6
+      sub asteroideG1.asteroideObj.pos.x, ASTEROIDG_SPEED
+      .elseif asteroideG1.direction == 7
+      sub asteroideG1.asteroideObj.pos.y, ASTEROIDG_SPEED
+      sub asteroideG1.asteroideObj.pos.x, ASTEROIDG_SPEED
+      .endif
     .endif
-    .if asteroideG2.direction == 0
-    sub asteroideG2.asteroideObj.pos.y, ASTEROIDG_SPEED
-    .elseif asteroideG2.direction == 1
-    sub asteroideG2.asteroideObj.pos.y, ASTEROIDG_SPEED
-    add asteroideG2.asteroideObj.pos.x, ASTEROIDG_SPEED
-    .elseif asteroideG2.direction == 2
-    add asteroideG2.asteroideObj.pos.x, ASTEROIDG_SPEED
-    .elseif asteroideG2.direction == 3
-    add asteroideG2.asteroideObj.pos.y, ASTEROIDG_SPEED
-    add asteroideG2.asteroideObj.pos.x, ASTEROIDG_SPEED
-    .elseif asteroideG2.direction == 4
-    add asteroideG2.asteroideObj.pos.y, ASTEROIDG_SPEED
-    .elseif asteroideG2.direction == 5
-    add asteroideG2.asteroideObj.pos.y, ASTEROIDG_SPEED
-    sub asteroideG2.asteroideObj.pos.x, ASTEROIDG_SPEED
-    .elseif asteroideG2.direction == 6
-    sub asteroideG2.asteroideObj.pos.x, ASTEROIDG_SPEED
-    .elseif asteroideG2.direction == 7
-    sub asteroideG2.asteroideObj.pos.y, ASTEROIDG_SPEED
-    sub asteroideG2.asteroideObj.pos.x, ASTEROIDG_SPEED
+    .if asteroideG2.destroyed == 1
+      .if asteroideG2.direction == 0
+      sub asteroideG2.asteroideObj.pos.y, ASTEROIDG_SPEED
+      .elseif asteroideG2.direction == 1
+      sub asteroideG2.asteroideObj.pos.y, ASTEROIDG_SPEED
+      add asteroideG2.asteroideObj.pos.x, ASTEROIDG_SPEED
+      .elseif asteroideG2.direction == 2
+      add asteroideG2.asteroideObj.pos.x, ASTEROIDG_SPEED
+      .elseif asteroideG2.direction == 3
+      add asteroideG2.asteroideObj.pos.y, ASTEROIDG_SPEED
+      add asteroideG2.asteroideObj.pos.x, ASTEROIDG_SPEED
+      .elseif asteroideG2.direction == 4
+      add asteroideG2.asteroideObj.pos.y, ASTEROIDG_SPEED
+      .elseif asteroideG2.direction == 5
+      add asteroideG2.asteroideObj.pos.y, ASTEROIDG_SPEED
+      sub asteroideG2.asteroideObj.pos.x, ASTEROIDG_SPEED
+      .elseif asteroideG2.direction == 6
+      sub asteroideG2.asteroideObj.pos.x, ASTEROIDG_SPEED
+      .elseif asteroideG2.direction == 7
+      sub asteroideG2.asteroideObj.pos.y, ASTEROIDG_SPEED
+      sub asteroideG2.asteroideObj.pos.x, ASTEROIDG_SPEED
+      .endif
     .endif
-    .if asteroideG3.direction == 0
-    sub asteroideG3.asteroideObj.pos.y, ASTEROIDG_SPEED
-    .elseif asteroideG3.direction == 1
-    sub asteroideG3.asteroideObj.pos.y, ASTEROIDG_SPEED
-    add asteroideG3.asteroideObj.pos.x, ASTEROIDG_SPEED
-    .elseif asteroideG3.direction == 2
-    add asteroideG3.asteroideObj.pos.x, ASTEROIDG_SPEED
-    .elseif asteroideG3.direction == 3
-    add asteroideG3.asteroideObj.pos.y, ASTEROIDG_SPEED
-    add asteroideG3.asteroideObj.pos.x, ASTEROIDG_SPEED
-    .elseif asteroideG3.direction == 4
-    add asteroideG3.asteroideObj.pos.y, ASTEROIDG_SPEED
-    .elseif asteroideG3.direction == 5
-    add asteroideG3.asteroideObj.pos.y, ASTEROIDG_SPEED
-    sub asteroideG3.asteroideObj.pos.x, ASTEROIDG_SPEED
-    .elseif asteroideG3.direction == 6
-    sub asteroideG3.asteroideObj.pos.x, ASTEROIDG_SPEED
-    .elseif asteroideG3.direction == 7
-    sub asteroideG3.asteroideObj.pos.y, ASTEROIDG_SPEED
-    sub asteroideG3.asteroideObj.pos.x, ASTEROIDG_SPEED
+    .if asteroideG3.destroyed == 1
+      .if asteroideG3.direction == 0
+      sub asteroideG3.asteroideObj.pos.y, ASTEROIDG_SPEED
+      .elseif asteroideG3.direction == 1
+      sub asteroideG3.asteroideObj.pos.y, ASTEROIDG_SPEED
+      add asteroideG3.asteroideObj.pos.x, ASTEROIDG_SPEED
+      .elseif asteroideG3.direction == 2
+      add asteroideG3.asteroideObj.pos.x, ASTEROIDG_SPEED
+      .elseif asteroideG3.direction == 3
+      add asteroideG3.asteroideObj.pos.y, ASTEROIDG_SPEED
+      add asteroideG3.asteroideObj.pos.x, ASTEROIDG_SPEED
+      .elseif asteroideG3.direction == 4
+      add asteroideG3.asteroideObj.pos.y, ASTEROIDG_SPEED
+      .elseif asteroideG3.direction == 5
+      add asteroideG3.asteroideObj.pos.y, ASTEROIDG_SPEED
+      sub asteroideG3.asteroideObj.pos.x, ASTEROIDG_SPEED
+      .elseif asteroideG3.direction == 6
+      sub asteroideG3.asteroideObj.pos.x, ASTEROIDG_SPEED
+      .elseif asteroideG3.direction == 7
+      sub asteroideG3.asteroideObj.pos.y, ASTEROIDG_SPEED
+      sub asteroideG3.asteroideObj.pos.x, ASTEROIDG_SPEED
+      .endif
     .endif
-    .if asteroideG4.direction == 0
-    sub asteroideG4.asteroideObj.pos.y, ASTEROIDG_SPEED
-    .elseif asteroideG4.direction == 1
-    sub asteroideG4.asteroideObj.pos.y, ASTEROIDG_SPEED
-    add asteroideG4.asteroideObj.pos.x, ASTEROIDG_SPEED
-    .elseif asteroideG4.direction == 2
-    add asteroideG4.asteroideObj.pos.x, ASTEROIDG_SPEED
-    .elseif asteroideG4.direction == 3
-    add asteroideG4.asteroideObj.pos.y, ASTEROIDG_SPEED
-    add asteroideG4.asteroideObj.pos.x, ASTEROIDG_SPEED
-    .elseif asteroideG4.direction == 4
-    add asteroideG4.asteroideObj.pos.y, ASTEROIDG_SPEED
-    .elseif asteroideG4.direction == 5
-    add asteroideG4.asteroideObj.pos.y, ASTEROIDG_SPEED
-    sub asteroideG4.asteroideObj.pos.x, ASTEROIDG_SPEED
-    .elseif asteroideG4.direction == 6
-    sub asteroideG4.asteroideObj.pos.x, ASTEROIDG_SPEED
-    .elseif asteroideG4.direction == 7
-    sub asteroideG4.asteroideObj.pos.y, ASTEROIDG_SPEED
-    sub asteroideG4.asteroideObj.pos.x, ASTEROIDG_SPEED
+    .if asteroideG4.destroyed == 1
+      .if asteroideG4.direction == 0
+      sub asteroideG4.asteroideObj.pos.y, ASTEROIDG_SPEED
+      .elseif asteroideG4.direction == 1
+      sub asteroideG4.asteroideObj.pos.y, ASTEROIDG_SPEED
+      add asteroideG4.asteroideObj.pos.x, ASTEROIDG_SPEED
+      .elseif asteroideG4.direction == 2
+      add asteroideG4.asteroideObj.pos.x, ASTEROIDG_SPEED
+      .elseif asteroideG4.direction == 3
+      add asteroideG4.asteroideObj.pos.y, ASTEROIDG_SPEED
+      add asteroideG4.asteroideObj.pos.x, ASTEROIDG_SPEED
+      .elseif asteroideG4.direction == 4
+      add asteroideG4.asteroideObj.pos.y, ASTEROIDG_SPEED
+      .elseif asteroideG4.direction == 5
+      add asteroideG4.asteroideObj.pos.y, ASTEROIDG_SPEED
+      sub asteroideG4.asteroideObj.pos.x, ASTEROIDG_SPEED
+      .elseif asteroideG4.direction == 6
+      sub asteroideG4.asteroideObj.pos.x, ASTEROIDG_SPEED
+      .elseif asteroideG4.direction == 7
+      sub asteroideG4.asteroideObj.pos.y, ASTEROIDG_SPEED
+      sub asteroideG4.asteroideObj.pos.x, ASTEROIDG_SPEED
+      .endif
     .endif
   .endif
   ret
 moveAsteroids endp ;fim da proc
 
-changeFogueteSpeed proc uses eax addrFoguete : DWORD ;muda a velocidade do foguete
+;***************************************************************************************
+
+
+
+;****************************************************************************************
+;
+;            MOVE A NAVE, INCREMENTANDO E DECREMENTANDO AS VARIÁVEIS DE POSIÇÃO
+;
+;****************************************************************************************
+
+moveNave proc 
+  add naveInimiga.naveObj.pos.x, 3
+  sub naveInimiga.naveObj.pos.y, 1
+  ret
+moveNave endp 
+
+;****************************************************************************************
+
+
+
+;****************************************************************************************
+;
+;        INCREMENTA E DECREMENTA A POSIÇÃO DO FOGUETE, CONFORME A VELOCIDADE
+;
+;****************************************************************************************
+
+changeFogueteSpeed proc uses eax addrFoguete : DWORD
     assume eax: ptr foguete
     mov eax, addrFoguete
 
@@ -835,12 +1142,22 @@ changeFogueteSpeed proc uses eax addrFoguete : DWORD ;muda a velocidade do fogue
     ret
 changeFogueteSpeed endp ;fim da proc
 
+;***************************************************************************************
+
+
+
+;***************************************************************************************
+;
+;                MUDA A POSIÇÃO DO FOGUETE, CASO ELE COLIDE COM A TELA
+;
+;***************************************************************************************
+
 fixCoordinates proc addrFoguete:dword
 assume eax:ptr foguete
    mov eax, addrFoguete
 
    .if [eax].fogueteObj.pos.x > WINDOW_SIZE_X && [eax].fogueteObj.pos.x < 80000000h
-       mov [eax].fogueteObj.pos.x, 20                   ;sorry
+       mov [eax].fogueteObj.pos.x, 20                  
    .endif
 
    .if [eax].fogueteObj.pos.x <= 0 || [eax].fogueteObj.pos.x > 80000000h
@@ -853,10 +1170,53 @@ assume eax:ptr foguete
    .endif
 
    .if [eax].fogueteObj.pos.y <= 0 || [eax].fogueteObj.pos.y > 80000000h
-       mov [eax].fogueteObj.pos.y, WINDOW_SIZE_Y - 80 
+       mov [eax].fogueteObj.pos.y, WINDOW_SIZE_Y - 20 
    .endif
    ret
 fixCoordinates endp ;fim da proc
+
+;***************************************************************************************
+
+
+
+;***************************************************************************************
+;
+;                 MUDA A POSIÇÃO DA NAVE, CASO ELA COLIDE COM A TELA
+;
+;***************************************************************************************
+
+fixNaveCoordinates proc addrNave:dword
+assume eax:ptr nave
+   mov eax, addrNave
+
+   .if [eax].naveObj.pos.x > WINDOW_SIZE_X && [eax].naveObj.pos.x < 80000000h
+       mov [eax].naveObj.pos.x, 20                   
+   .endif
+
+   .if [eax].naveObj.pos.x <= 0 || [eax].naveObj.pos.x > 80000000h
+       mov [eax].naveObj.pos.x, WINDOW_SIZE_X - 20 
+   .endif
+
+
+   .if [eax].naveObj.pos.y > WINDOW_SIZE_Y && [eax].naveObj.pos.y < 80000000h
+       mov [eax].naveObj.pos.y, 20
+   .endif
+
+   .if [eax].naveObj.pos.y <= 0 || [eax].naveObj.pos.y > 80000000h
+       mov [eax].naveObj.pos.y, WINDOW_SIZE_Y 
+   .endif
+   ret
+fixNaveCoordinates endp ;fim da proc
+
+;***************************************************************************************
+
+
+
+;***************************************************************************************
+;
+;               MUDA A POSIÇÃO DOS PROJÉTEIS, CASO ELES COLIDEM COM A TELA
+;
+;***************************************************************************************
 
 fixBulletCoordinates proc addrTiro:dword ;verifica se as balas passaram da tela
 assume eax:ptr tiro
@@ -867,21 +1227,31 @@ assume eax:ptr tiro
         mov [eax].tiroObj.pos.x, 20                  
     .endif
 
-    .if [eax].tiroObj.pos.x <= 10 || [eax].tiroObj.pos.x > 80000000h
+    .if [eax].tiroObj.pos.x <= 0 || [eax].tiroObj.pos.x > 80000000h
         mov [eax].tiroObj.pos.x, 1180 
     .endif
 
 
-    .if [eax].tiroObj.pos.y > WINDOW_SIZE_Y - 80 && [eax].tiroObj.pos.y < 80000000h
+    .if [eax].tiroObj.pos.y > WINDOW_SIZE_Y&& [eax].tiroObj.pos.y < 80000000h
         mov [eax].tiroObj.pos.y, 20
     .endif
 
-    .if [eax].tiroObj.pos.y <= 10 || [eax].tiroObj.pos.y > 80000000h
-        mov [eax].tiroObj.pos.y, WINDOW_SIZE_Y - 90 
+    .if [eax].tiroObj.pos.y <= 0 || [eax].tiroObj.pos.y > 80000000h
+        mov [eax].tiroObj.pos.y, WINDOW_SIZE_Y
     .endif
   .endif
   ret
 fixBulletCoordinates endp ;fim da proc
+
+;***************************************************************************************
+
+
+
+;***************************************************************************************
+;
+;               MUDA A POSIÇÃO DOS ASTERÓIDES, CASO ELES COLIDEM COM A TELA
+;
+;***************************************************************************************
 
 fixAsteroidsCoordinates proc ; proc que verifica se os asteroides passaram da tela, e os reposiciona no lado oposto.
   .if asteroideG1.asteroideObj.pos.x > WINDOW_SIZE_X && asteroideG1.asteroideObj.pos.x < 80000000h
@@ -939,6 +1309,16 @@ fixAsteroidsCoordinates proc ; proc que verifica se os asteroides passaram da te
   ret
 fixAsteroidsCoordinates endp ;fim da proc
 
+;***************************************************************************************
+
+
+
+;***************************************************************************************
+;
+;                                    CASO O JOGO ACABE
+;
+;***************************************************************************************
+
 gameOver proc
   mov fogueteJogador.fogueteObj.pos.x, 375
   mov fogueteJogador.fogueteObj.pos.y, 175
@@ -966,63 +1346,20 @@ gameOver proc
   mov tiroN.tiroObj.pos.x, -100
   mov tiroN.tiroObj.pos.y, -100
 
-  mov asteroideG1.asteroideObj.pos.x, 0
-  mov asteroideG1.asteroideObj.pos.y, 0
-  mov asteroideG2.asteroideObj.pos.x, 280
-  mov asteroideG2.asteroideObj.pos.y, 0
-  mov asteroideG3.asteroideObj.pos.x, 440
-  mov asteroideG3.asteroideObj.pos.y, 340
-  mov asteroideG4.asteroideObj.pos.x, 715
-  mov asteroideG4.asteroideObj.pos.y, 140
+  invoke resetarAsteroides
 
   ret
 gameOver endp ;fim da proc
 
-asteroideFogueteColisao proc uses eax addrAsteroide : DWORD 
-  assume eax: ptr asteroideG
-  mov eax, addrAsteroide
+;***************************************************************************************
 
-  invoke isColliding, fogueteJogador.fogueteObj.pos, [eax].asteroideObj.pos, FOGUETE_SIZE_POINT, ASTEROIDE_SIZE_POINT
-  .if edx == TRUE
-    mov fogueteJogador.fogueteObj.pos.x, 375
-    mov fogueteJogador.fogueteObj.pos.y, 175
-    dec fogueteJogador.life
 
-    ; Som da explosão do Foguete
-    mov   open_lpstrDeviceType, 0h         ;fill MCI_OPEN_PARMS structure
-    mov   open_lpstrElementName,OFFSET explosao_foguete
-    invoke mciSendCommandA,0,MCI_OPEN, MCI_OPEN_ELEMENT,offset open_dwCallback 
-    cmp   edx,0h                 	
-    je    next		
-    next:	
-        invoke mciSendCommandA,open_wDeviceID,MCI_PLAY,MCI_NOTIFY,offset play_dwCallback
-  .endif
 
-  ret
-asteroideFogueteColisao endp
-
-asteroideBalaColisao proc uses eax addrAsteroide : DWORD 
-  assume eax: ptr asteroideG
-  mov eax, addrAsteroide
-
-  invoke isColliding, tiroF.tiroObj.pos, [eax].asteroideObj.pos, TIRO_SIZE_POINT, ASTEROIDE_SIZE_POINT
-  .if edx == TRUE
-    mov [eax].destroyed, 0
-    mov tiroF.remainingDistance, 0
-    add fogueteJogador.points, 100
-
-    ; Som da explosão do asteroide
-    mov   open_lpstrDeviceType, 0h         ;fill MCI_OPEN_PARMS structure
-    mov   open_lpstrElementName,OFFSET explosao_asteroide
-    invoke mciSendCommandA,0,MCI_OPEN, MCI_OPEN_ELEMENT,offset open_dwCallback 
-    cmp   edx,0h                 	
-    je    next		
-    next:	
-        invoke mciSendCommandA,open_wDeviceID,MCI_PLAY,MCI_NOTIFY,offset play_dwCallback
-  .endif
-
-  ret
-asteroideBalaColisao endp
+;***************************************************************************************
+;
+;                     MÉTODO QUE CONTROLA O JOGO POR COMPLETO
+;
+;***************************************************************************************
 
 gameManager proc p:dword
   LOCAL area:RECT
@@ -1040,49 +1377,20 @@ gameManager proc p:dword
     invoke asteroideBalaColisao, addr asteroideG2
     invoke asteroideBalaColisao, addr asteroideG3
     invoke asteroideBalaColisao, addr asteroideG4
-    ; invoke isColliding, player1.playerObj.pos, arrow2.arrowObj.pos, PLAYER_SIZE_POINT, ARROW_SIZE_POINT
-    ; .if edx == TRUE
-    ;     mov player1.playerObj.pos.x, 100
-    ;     mov player1.playerObj.pos.y, 350
-    ;     dec player1.life
-    ;     .if player1.life == 0
-    ;         invoke gameOver
-    ;         mov GAMESTATE, 4 ; player 2 won
-    ;         .continue
-    ;     .endif
-    ; .endif
 
-    ; invoke isColliding, player2.playerObj.pos, arrow2.arrowObj.pos, PLAYER_SIZE_POINT, ARROW_SIZE_POINT
-    ; .if edx == TRUE
-    ;     .if arrow2.onGround == 1
-    ;         ;mov arrow1.onGround, 0               ; pick up arrow from the ground
-    ;         mov arrow2.arrowObj.pos.x, -100
-    ;         mov arrow2.arrowObj.pos.y, -100
-    ;         mov arrow2.playerOwns, 1
-    ;     .endif
-    ; .endif
-
-    ; .if arrow1.remainingDistance > 0
-    ;     invoke moveArrow, addr arrow1
-    ; .else
-    ;     mov arrow1.onGround, 1
-    ; .endif
-
-    ; .if arrow2.remainingDistance > 0
-    ;     invoke moveArrow, addr arrow2
-    ; .else
-    ;     mov arrow2.onGround, 1
-    ; .endif
+    invoke naveFogueteColisao, addr naveInimiga
     
-    invoke changeFogueteSpeed, ADDR fogueteJogador
+    invoke changeFogueteSpeed, addr fogueteJogador
     invoke updateDirection, addr fogueteJogador
-    invoke moveFoguete, addr fogueteJogador     
 
+    invoke moveFoguete, addr fogueteJogador     
+    invoke moveNave 
     invoke moveBullet, addr tiroF 
     invoke moveAsteroids
     
     invoke fixBulletCoordinates, addr tiroF
     invoke fixCoordinates, addr fogueteJogador
+    invoke fixNaveCoordinates, addr naveInimiga
     invoke fixAsteroidsCoordinates
     
     .if fogueteJogador.life == 0
@@ -1098,24 +1406,27 @@ gameManager proc p:dword
           invoke mciSendCommandA,open_wDeviceID,MCI_PLAY,MCI_NOTIFY,offset play_dwCallback
       .break
     .endif
-
-    .if asteroideG1.destroyed == 0 && asteroideG2.destroyed == 0 && asteroideG3.destroyed == 0 && asteroideG4.destroyed == 0
-      mov asteroideG1.destroyed, 1
-      mov asteroideG2.destroyed, 1
-      mov asteroideG3.destroyed, 1
-      mov asteroideG4.destroyed, 1
-    .endif
   .endw
 
   .while GAMESTATE == 2
-    invoke Sleep, 30
+    invoke Sleep, 5000
+    mov GAMESTATE, 0
   .endw
 
   jmp game
   ret
 gameManager endp ;fim da proc
 
-; Invoca-se os bitmaps
+;***************************************************************************************
+
+
+
+;***************************************************************************************
+;
+;                                 INVOCA-SE OS BITMAPS
+;
+;***************************************************************************************
+
 loadImages proc
   ; Backgrounds
   invoke LoadBitmap, hInstance, 130
@@ -1242,6 +1553,16 @@ WinMain proc hInst :DWORD, hPrevInst :DWORD, CmdLine :DWORD, CmdShow :DWORD
   return msg.wParam
 WinMain endp ;fim da proc
 
+;***************************************************************************************
+
+
+
+;***************************************************************************************
+;
+;                     VERIFICA OS EVENTOS PROVOCADOS PELO JOGADOR
+;
+;***************************************************************************************
+
 WndProc proc hWin   :DWORD, uMsg   :DWORD, wParam :DWORD, lParam :DWORD, oldParam :DWORD
   LOCAL direction : BYTE
   LOCAL move      : BYTE
@@ -1292,7 +1613,7 @@ WndProc proc hWin   :DWORD, uMsg   :DWORD, wParam :DWORD, lParam :DWORD, oldPara
 
 .elseif uMsg == WM_CHAR
   .if wParam == VK_SPACE
-    .if (GAMESTATE == 0 || GAMESTATE == 2)
+    .if (GAMESTATE == 0)
       mov GAMESTATE, 1
       mov fogueteJogador.points, 0
     .elseif (GAMESTATE == 1)
@@ -1319,7 +1640,7 @@ WndProc proc hWin   :DWORD, uMsg   :DWORD, wParam :DWORD, lParam :DWORD, oldPara
     .endif
   .endif
 
-.ELSEIF uMsg == WM_KEYUP
+.elseif uMsg == WM_KEYUP
   .if (wParam == 77h || wParam == 57h) ;w
     mov keydown, FALSE
     ;mov direction, 1
@@ -1342,16 +1663,7 @@ WndProc proc hWin   :DWORD, uMsg   :DWORD, wParam :DWORD, lParam :DWORD, oldPara
 
   .endif
 
-  ;.if direction != -1
-    ; invoke changeFogueteSpeed, ADDR fogueteJogador, direction, keydown, move
-    ; mov direction, -1
-    ; mov keydown, -1
-    ; mov move, -1
-    ; mov teleport, -1
-  ;.endif        
-;________________________________________________________________________________
-
-.ELSEIF uMsg == WM_KEYDOWN
+.elseif uMsg == WM_KEYDOWN
   .if (wParam == 77h || wParam == 57h) ; w
       mov keydown, TRUE
       ;mov direction, 1
@@ -1382,6 +1694,16 @@ ret
 
 WndProc endp ;fim da proc
 
+;***************************************************************************************
+
+
+
+;***************************************************************************************
+;
+;     MÉTODO PARA DESCOBRIR O TOPO DA TELA, A FIM DE DESENHAR A TELA CORRETAMENTE
+;
+;***************************************************************************************
+
 TopXY proc wDim:DWORD, sDim:DWORD
 
     shr sDim, 1    
@@ -1391,6 +1713,11 @@ TopXY proc wDim:DWORD, sDim:DWORD
 
     return sDim
 
-TopXY endp ;fim da proc
+TopXY endp
 
-end start
+
+;********************************************************FIM DAS PROCEDURES********************************************************
+
+end start ;fim da "main"
+
+;fim do código
